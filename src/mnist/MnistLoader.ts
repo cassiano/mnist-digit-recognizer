@@ -1,4 +1,5 @@
 import type { TrainingData } from '../neural-network/types'
+import { map } from '../utils'
 
 const MNIST_IMAGE_DIMENSIONS = { rows: 28, cols: 28 }
 
@@ -217,13 +218,20 @@ export class MnistLoader {
     const image = dataset.inputs[index]
     if (!image) throw new Error(`Image index out of bounds: ${index}`)
 
+    const gradient = ' .░▒▓▏▎▍▌▋▊▉█'
+
     let text = ''
 
     for (let row = 0; row < MNIST_IMAGE_DIMENSIONS.rows; row++) {
       for (let col = 0; col < MNIST_IMAGE_DIMENSIONS.cols; col++) {
         const pixelIndex = row * MNIST_IMAGE_DIMENSIONS.cols + col
+        const value = image[pixelIndex]
+        const charIndex = Math.trunc(
+          map(value, 0, 1, 0, gradient.length - 1, true),
+        )
+        const unicodeChar = gradient[charIndex]
 
-        text += image[pixelIndex] === 0 ? ' ' : '◻️'
+        text += unicodeChar + unicodeChar
       }
 
       text += '\n'
