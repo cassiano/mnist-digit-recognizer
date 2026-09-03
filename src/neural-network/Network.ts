@@ -1,5 +1,10 @@
-import { Layer } from './Layer';
-import type { NetworkConfig, TrainingData, TrainingResult, Prediction } from './types';
+import { Layer } from './Layer'
+import type {
+  NetworkConfig,
+  TrainingData,
+  TrainingResult,
+  Prediction,
+} from './types'
 
 /**
  * Multi-layer perceptron (MLP) neural network.
@@ -17,21 +22,27 @@ import type { NetworkConfig, TrainingData, TrainingResult, Prediction } from './
  */
 export class Network {
   /** Ordered list of layers from input to output */
-  layers: Layer[];
+  layers: Layer[]
   /** Current learning rate (decays during training) */
-  learningRate: number;
+  learningRate: number
 
   constructor(config: NetworkConfig) {
-    this.learningRate = config.learningRate;
-    this.layers = [];
+    this.learningRate = config.learningRate
+    this.layers = []
 
     // Create layers: for each consecutive pair of sizes, create a layer
-    const layerSizes = config.layers;
+    const layerSizes = config.layers
+
     for (let i = 0; i < layerSizes.length - 1; i++) {
-      const isOutput = i === layerSizes.length - 2;
+      const isOutput = i === layerSizes.length - 2
+
       this.layers.push(
-        new Layer(layerSizes[i], layerSizes[i + 1], isOutput ? 'softmax' : (config.activation || 'relu')),
-      );
+        new Layer(
+          layerSizes[i],
+          layerSizes[i + 1],
+          isOutput ? 'softmax' : config.activation || 'relu',
+        ),
+      )
     }
   }
 
@@ -41,11 +52,11 @@ export class Network {
    * Returns the final output (probability distribution over 10 digits).
    */
   forward(input: number[]): number[] {
-    let current = input;
-    for (const layer of this.layers) {
-      current = layer.forward(current);
-    }
-    return current;
+    let current = input
+
+    for (const layer of this.layers) current = layer.forward(current)
+
+    return current
   }
 
   /**
@@ -54,16 +65,18 @@ export class Network {
    * Returns the predicted digit, its confidence, and full probability distribution.
    */
   predict(input: number[]): Prediction {
-    const probabilities = this.forward(input);
-    let maxIdx = 0;
-    let maxVal = probabilities[0];
+    const probabilities = this.forward(input)
+    let maxIdx = 0
+    let maxVal = probabilities[0]
+
     for (let i = 1; i < probabilities.length; i++) {
       if (probabilities[i] > maxVal) {
-        maxVal = probabilities[i];
-        maxIdx = i;
+        maxVal = probabilities[i]
+        maxIdx = i
       }
     }
-    return { digit: maxIdx, confidence: maxVal, probabilities };
+
+    return { digit: maxIdx, confidence: maxVal, probabilities }
   }
 
   /**
@@ -77,20 +90,20 @@ export class Network {
    * @param learningRate - Optional override for this update's learning rate
    */
   backward(target: number, learningRate?: number): void {
-    const lr = learningRate ?? this.learningRate;
-    const outputLayer = this.layers[this.layers.length - 1];
+    const lr = learningRate ?? this.learningRate
+    const outputLayer = this.layers[this.layers.length - 1]
 
     // Output layer error: difference between prediction and one-hot target
-    const outputDeltas = new Array(outputLayer.outputSize);
-    for (let i = 0; i < outputLayer.outputSize; i++) {
-      outputDeltas[i] = outputLayer.outputs[i] - (i === target ? 1 : 0);
-    }
+    const outputDeltas = new Array(outputLayer.outputSize)
+
+    for (let i = 0; i < outputLayer.outputSize; i++)
+      outputDeltas[i] = outputLayer.outputs[i] - (i === target ? 1 : 0)
 
     // Propagate deltas backwards through all layers
-    let deltas = outputDeltas;
-    for (let l = this.layers.length - 1; l >= 0; l--) {
-      deltas = this.layers[l].backward(deltas, lr);
-    }
+    let deltas = outputDeltas
+
+    for (let l = this.layers.length - 1; l >= 0; l--)
+      deltas = this.layers[l].backward(deltas, lr)
   }
 
   /**
@@ -106,40 +119,43 @@ export class Network {
    * The TrainingPanel component implements its own async training loop with
    * chunked processing to keep the UI responsive.
    */
-  train(data: TrainingData, epochs: number, batchSize: number = 32, onEpoch?: (result: TrainingResult) => void): void {
-    const { inputs, labels } = data;
+  train(
+    data: TrainingData,
+    epochs: number,
+    batchSize: number = 32,
+    onEpoch?: (result: TrainingResult) => void,
+  ): void {
+    const { inputs, labels } = data
 
     for (let epoch = 0; epoch < epochs; epoch++) {
-      let totalLoss = 0;
-      let correct = 0;
+      let totalLoss = 0
+      let correct = 0
+
       // Fisher-Yates shuffle for random sampling
-      const indices = Array.from({ length: inputs.length }, (_, i) => i);
-      this.shuffle(indices);
+      const indices = Array.from({ length: inputs.length }, (_, i) => i)
+      this.shuffle(indices)
 
       for (let i = 0; i < indices.length; i++) {
-        const idx = indices[i];
-        const output = this.forward(inputs[idx]);
-        const predicted = output.indexOf(Math.max(...output));
-        if (predicted === labels[idx]) correct++;
+        const idx = indices[i]
+        const output = this.forward(inputs[idx])
+        const predicted = output.indexOf(Math.max(...output))
+
+        if (predicted === labels[idx]) correct++
 
         // Cross-entropy loss: -log(p_target)
-        const targetVal = output[labels[idx]];
-        totalLoss += -Math.log(Math.max(targetVal, 1e-15));
+        const targetVal = output[labels[idx]]
+        totalLoss += -Math.log(Math.max(targetVal, 1e-15))
 
-        this.backward(labels[idx]);
+        this.backward(labels[idx])
 
         // Learning rate decay: reduce by 0.1% every batchSize samples
-        if (i % batchSize === 0 && i > 0) {
-          this.learningRate *= 0.999;
-        }
+        if (i % batchSize === 0 && i > 0) this.learningRate *= 0.999
       }
 
-      const accuracy = correct / inputs.length;
-      const avgLoss = totalLoss / inputs.length;
+      const accuracy = correct / inputs.length
+      const avgLoss = totalLoss / inputs.length
 
-      if (onEpoch) {
-        onEpoch({ epoch: epoch + 1, loss: avgLoss, accuracy });
-      }
+      onEpoch?.({ epoch: epoch + 1, loss: avgLoss, accuracy })
     }
   }
 
@@ -149,8 +165,9 @@ export class Network {
    */
   private shuffle(array: number[]): void {
     for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+      const j = Math.floor(Math.random() * (i + 1))
+
+      ;[array[i], array[j]] = [array[j], array[i]]
     }
   }
 
@@ -160,30 +177,36 @@ export class Network {
    * Returns a copy to prevent external mutation.
    */
   getLayerOutputs(layerIndex: number): number[] {
-    if (layerIndex >= 0 && layerIndex < this.layers.length) {
-      return [...this.layers[layerIndex].outputs];
-    }
-    return [];
+    if (layerIndex >= 0 && layerIndex < this.layers.length)
+      return [...this.layers[layerIndex].outputs]
+
+    return []
   }
 
   /**
    * Computes summary statistics for the network architecture.
    * Returns total neuron count, total parameter count, and per-layer details.
    */
-  getNetworkInfo(): { totalNeurons: number; totalWeights: number; layerDetails: { neurons: number; weights: number }[] } {
-    let totalNeurons = 0;
-    let totalWeights = 0;
-    const layerDetails: { neurons: number; weights: number }[] = [];
+  getNetworkInfo(): {
+    totalNeurons: number
+    totalWeights: number
+    layerDetails: { neurons: number; weights: number }[]
+  } {
+    let totalNeurons = 0
+    let totalWeights = 0
+    const layerDetails: { neurons: number; weights: number }[] = []
 
     for (const layer of this.layers) {
       // Parameters = weights (inputSize * outputSize) + biases (outputSize)
-      const layerWeights = layer.outputSize * layer.inputSize + layer.outputSize;
-      totalNeurons += layer.outputSize;
-      totalWeights += layerWeights;
-      layerDetails.push({ neurons: layer.outputSize, weights: layerWeights });
+      const layerWeights = layer.outputSize * layer.inputSize + layer.outputSize
+
+      totalNeurons += layer.outputSize
+      totalWeights += layerWeights
+
+      layerDetails.push({ neurons: layer.outputSize, weights: layerWeights })
     }
 
-    return { totalNeurons, totalWeights, layerDetails };
+    return { totalNeurons, totalWeights, layerDetails }
   }
 
   /**
@@ -192,12 +215,17 @@ export class Network {
    */
   serialize(): string {
     const data = {
-      layerSizes: this.layers.map(l => [l.inputSize, l.outputSize, l.activation]),
+      layerSizes: this.layers.map(l => [
+        l.inputSize,
+        l.outputSize,
+        l.activation,
+      ]),
       weights: this.layers.map(l =>
         l.neurons.map(n => ({ w: [...n.weights], b: n.bias })),
       ),
-    };
-    return JSON.stringify(data);
+    }
+
+    return JSON.stringify(data)
   }
 
   /**
@@ -205,15 +233,24 @@ export class Network {
    * Rebuilds the architecture and loads all weights/biases.
    */
   static deserialize(json: string): Network {
-    const data = JSON.parse(json);
-    const sizes = [data.layerSizes[0][0], ...data.layerSizes.map((l: number[]) => l[1])];
-    const net = new Network({ layers: sizes, learningRate: 0.1, activation: 'relu' });
+    const data = JSON.parse(json)
+    const sizes = [
+      data.layerSizes[0][0],
+      ...data.layerSizes.map((l: number[]) => l[1]),
+    ]
+    const net = new Network({
+      layers: sizes,
+      learningRate: 0.1,
+      activation: 'relu',
+    })
+
     for (let l = 0; l < data.weights.length; l++) {
       for (let n = 0; n < data.weights[l].length; n++) {
-        net.layers[l].neurons[n].weights = data.weights[l][n].w;
-        net.layers[l].neurons[n].bias = data.weights[l][n].b;
+        net.layers[l].neurons[n].weights = data.weights[l][n].w
+        net.layers[l].neurons[n].bias = data.weights[l][n].b
       }
     }
-    return net;
+
+    return net
   }
 }

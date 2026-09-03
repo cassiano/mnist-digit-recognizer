@@ -76,7 +76,7 @@ export class MnistLoader {
     const buffer = await response.arrayBuffer()
     const data = new Uint8Array(buffer)
     const decompressed = await this.gunzip(data)
-    const view = new DataView(decompressed.buffer)
+    const view = new DataView(decompressed.buffer) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView
 
     const magic = view.getUint32(0, false)
     if (magic !== 2051)
@@ -116,7 +116,7 @@ export class MnistLoader {
     const buffer = await response.arrayBuffer()
     const data = new Uint8Array(buffer)
     const decompressed = await this.gunzip(data)
-    const view = new DataView(decompressed.buffer)
+    const view = new DataView(decompressed.buffer) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView
 
     const magic = view.getUint32(0, false)
     if (magic !== 2049)

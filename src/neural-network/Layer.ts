@@ -1,6 +1,6 @@
-import { Neuron } from './Neuron';
-import { relu, reluDeriv, sigmoid, sigmoidDeriv, softmax } from './Activation';
-import type { ActivationType } from './types';
+import { Neuron } from './Neuron'
+import { relu, reluDeriv, sigmoid, sigmoidDeriv, softmax } from './Activation'
+import type { ActivationType } from './types'
 
 /**
  * A single layer in the neural network.
@@ -15,29 +15,33 @@ import type { ActivationType } from './types';
  */
 export class Layer {
   /** Array of neurons in this layer */
-  neurons: Neuron[];
+  neurons: Neuron[]
   /** Number of inputs to this layer (connections from previous layer) */
-  inputSize: number;
+  inputSize: number
   /** Number of outputs from this layer (number of neurons) */
-  outputSize: number;
+  outputSize: number
   /** Activation function applied to this layer's outputs */
-  activation: ActivationType;
+  activation: ActivationType
 
   /** Inputs from the previous layer, stored for backpropagation */
-  private inputs: number[] = [];
+  private inputs: number[] = []
   /** Pre-activation values (z = Wx + b), stored for computing activation derivatives */
-  preActivations: number[] = [];
+  preActivations: number[] = []
   /** Post-activation outputs, used as inputs to the next layer */
-  outputs: number[] = [];
+  outputs: number[] = []
 
-  constructor(inputSize: number, outputSize: number, activation: ActivationType = 'relu') {
-    this.inputSize = inputSize;
-    this.outputSize = outputSize;
-    this.activation = activation;
-    this.neurons = [];
-    for (let i = 0; i < outputSize; i++) {
-      this.neurons.push(new Neuron(inputSize));
-    }
+  constructor(
+    inputSize: number,
+    outputSize: number,
+    activation: ActivationType = 'relu',
+  ) {
+    this.inputSize = inputSize
+    this.outputSize = outputSize
+    this.activation = activation
+    this.neurons = []
+
+    for (let i = 0; i < outputSize; i++)
+      this.neurons.push(new Neuron(inputSize))
   }
 
   /**
@@ -50,28 +54,28 @@ export class Layer {
    * Stores inputs, preActivations, and outputs for use in backward().
    */
   forward(inputs: number[]): number[] {
-    this.inputs = inputs;
-    this.preActivations = new Array(this.outputSize);
+    this.inputs = inputs
+    this.preActivations = new Array(this.outputSize)
 
     // Compute weighted sum + bias for each neuron
     for (let i = 0; i < this.outputSize; i++) {
-      const n = this.neurons[i];
-      let sum = n.bias;
-      for (let j = 0; j < this.inputSize; j++) {
-        sum += n.weights[j] * inputs[j];
-      }
-      this.preActivations[i] = sum;
+      const n = this.neurons[i]
+      let sum = n.bias
+
+      for (let j = 0; j < this.inputSize; j++) sum += n.weights[j] * inputs[j]
+
+      this.preActivations[i] = sum
     }
 
     // Apply activation function
     if (this.activation === 'softmax') {
-      this.outputs = softmax(this.preActivations);
+      this.outputs = softmax(this.preActivations)
     } else {
       this.outputs = this.preActivations.map(
         this.activation === 'sigmoid' ? sigmoid : relu,
-      );
+      )
     }
-    return this.outputs;
+    return this.outputs
   }
 
   /**
@@ -89,30 +93,33 @@ export class Layer {
    * Returns input deltas to propagate gradients to the previous layer.
    */
   backward(outputDeltas: number[], learningRate: number): number[] {
-    const inputDeltas = new Array(this.inputSize).fill(0);
+    const inputDeltas = new Array(this.inputSize).fill(0)
 
     for (let i = 0; i < this.outputSize; i++) {
       // Compute local gradient (delta) based on activation function
-      let delta: number;
+      let delta: number
+
       if (this.activation === 'softmax') {
         // Softmax + cross-entropy: gradient simplifies to (output - target)
-        delta = outputDeltas[i];
+        delta = outputDeltas[i]
       } else if (this.activation === 'sigmoid') {
-        delta = outputDeltas[i] * sigmoidDeriv(this.preActivations[i]);
+        delta = outputDeltas[i] * sigmoidDeriv(this.preActivations[i])
       } else {
         // ReLU: derivative is 1 for positive pre-activation, 0 otherwise
-        delta = outputDeltas[i] * reluDeriv(this.preActivations[i]);
+        delta = outputDeltas[i] * reluDeriv(this.preActivations[i])
       }
 
       // Update weights and bias, accumulate input deltas for previous layer
-      const n = this.neurons[i];
+      const n = this.neurons[i]
+
       for (let j = 0; j < this.inputSize; j++) {
-        inputDeltas[j] += n.weights[j] * delta;
-        n.weights[j] -= learningRate * delta * this.inputs[j];
+        inputDeltas[j] += n.weights[j] * delta
+        n.weights[j] -= learningRate * delta * this.inputs[j]
       }
-      n.bias -= learningRate * delta;
+
+      n.bias -= learningRate * delta
     }
 
-    return inputDeltas;
+    return inputDeltas
   }
 }

@@ -56,9 +56,12 @@ function loadSavedState(): {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (!saved) return null
+
     const net = Network.deserialize(saved)
+
     // Verify weights are non-zero (all-zero = untrained or failed)
     let hasNonZero = false
+
     for (const layer of net.layers) {
       for (const neuron of layer.neurons) {
         for (const w of neuron.weights) {
@@ -67,19 +70,25 @@ function loadSavedState(): {
             break
           }
         }
+
         if (hasNonZero) break
       }
+
       if (hasNonZero) break
     }
+
     if (!hasNonZero) {
       localStorage.removeItem(STORAGE_KEY)
       return null
     }
+
     // Extract hidden layer sizes (exclude input 784 and output 10)
     const hiddenLayerSizes = net.layers.map(l => l.outputSize).slice(0, -1)
+
     return { network: net, hiddenLayerSizes }
   } catch {
     localStorage.removeItem(STORAGE_KEY)
+
     return null
   }
 }
@@ -91,6 +100,7 @@ function App() {
   /** Initialize state from localStorage or defaults */
   const [initData] = useState(() => {
     const saved = loadSavedState()
+
     if (saved) {
       return {
         sizes: saved.hiddenLayerSizes,
@@ -98,7 +108,9 @@ function App() {
         trained: true,
       }
     }
+
     const sizes = [16, 16]
+
     return { sizes, network: buildNetwork(sizes), trained: false }
   })
 
@@ -174,6 +186,7 @@ function App() {
         const absAvg = allW.reduce((a, b) => a + Math.abs(b), 0) / allW.length
         const wMin = Math.min(...allW)
         const wMax = Math.max(...allW)
+
         console.log(
           `[Recognize] layer ${l} weights: avgAbs=${absAvg.toFixed(6)} min=${wMin.toFixed(6)} max=${wMax.toFixed(6)} allZero=${allW.every(w => w === 0)}`,
         )
@@ -184,6 +197,7 @@ function App() {
       }
 
       const result = net.predict(inputs)
+
       console.log(
         '[Recognize] probs:',
         JSON.stringify(result.probabilities.map(p => +p.toFixed(4))),
@@ -210,6 +224,7 @@ function App() {
   /** Adds a new hidden layer with 16 neurons to the architecture */
   const addLayer = () => {
     const newSizes = [...hiddenLayerSizes, 16]
+
     setHiddenLayerSizes(newSizes)
     setNetwork(buildNetwork(newSizes))
     setIsTrained(false)
@@ -218,7 +233,9 @@ function App() {
   /** Removes a hidden layer by index (minimum 1 layer required) */
   const removeLayer = (index: number) => {
     if (hiddenLayerSizes.length <= 1) return
+
     const newSizes = hiddenLayerSizes.filter((_, i) => i !== index)
+
     setHiddenLayerSizes(newSizes)
     setNetwork(buildNetwork(newSizes))
     setIsTrained(false)
@@ -227,7 +244,9 @@ function App() {
   /** Updates the neuron count for a specific hidden layer (clamped to 1-256) */
   const updateLayer = (index: number, size: number) => {
     const newSizes = [...hiddenLayerSizes]
+
     newSizes[index] = Math.max(1, Math.min(256, size || 1))
+
     setHiddenLayerSizes(newSizes)
     setNetwork(buildNetwork(newSizes))
     setIsTrained(false)
@@ -236,7 +255,9 @@ function App() {
   /** Resets the model: clears localStorage and creates a fresh untrained network */
   const handleReset = () => {
     localStorage.removeItem(STORAGE_KEY)
+
     const fresh = buildNetwork(hiddenLayerSizes)
+
     setNetwork(fresh)
     setIsTrained(false)
     setPrediction(null)
