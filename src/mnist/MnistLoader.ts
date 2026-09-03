@@ -10,6 +10,16 @@ const MNIST_URLS = {
   testImages: 'mnist/t10k-images-idx3-ubyte',
   testLabels: 'mnist/t10k-labels-idx1-ubyte',
 }
+// const MNIST_URLS = {
+//   trainImages:
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/train-images-idx3-ubyte',
+//   trainLabels:
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/train-labels-idx1-ubyte',
+//   testImages:
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/t10k-images-idx3-ubyte',
+//   testLabels:
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/t10k-labels-idx1-ubyte',
+// }
 
 export class MnistLoader {
   private trainData: TrainingData | null = null
