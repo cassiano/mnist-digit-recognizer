@@ -1,5 +1,8 @@
 import type { TrainingData } from '../neural-network/types'
 
+const MNIST_IMAGE_DIMENSIONS = { rows: 28, cols: 28 }
+
+// Files in Big Endian IDX format, gzipped.
 const MNIST_URLS = {
   trainImages: 'mnist/train-images-idx3-ubyte',
   trainLabels: 'mnist/train-labels-idx1-ubyte',
@@ -62,8 +65,8 @@ export class MnistLoader {
    * File format (after decompression):
    *   Bytes 0-3:   Magic number (2051 for images)
    *   Bytes 4-7:   Number of images
-   *   Bytes 8-11:  Number of rows per image (28)
-   *   Bytes 12-15: Number of columns per image (28)
+   *   Bytes 8-11:  Number of rows per image (MNIST_IMAGE_DIMENSIONS.rows = 28)
+   *   Bytes 12-15: Number of columns per image (MNIST_IMAGE_DIMENSIONS.cols = 28)
    *   Bytes 16+:   Pixel values (0-255), one byte per pixel, row-major order
    *
    * Each pixel is normalized to [0, 1] by dividing by 255.
@@ -143,40 +146,40 @@ export class MnistLoader {
    *   4. Concatenates all chunks into a single Uint8Array
    */
   private async gunzip(data: Uint8Array): Promise<Uint8Array> {
-    if (typeof DecompressionStream !== 'undefined') {
-      const ds = new DecompressionStream('gzip')
-      const writer = ds.writable.getWriter()
-      const reader = ds.readable.getReader()
+    if (typeof DecompressionStream === 'undefined')
+      throw new Error('DecompressionStream not supported in this browser')
 
-      const chunks: Uint8Array[] = []
-      let totalLength = 0
+    const ds = new DecompressionStream('gzip')
+    const writer = ds.writable.getWriter()
+    const reader = ds.readable.getReader()
 
-      const readTask = (async () => {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+    const chunks: Uint8Array[] = []
+    let totalLength = 0
 
-          chunks.push(value)
-          totalLength += value.length
-        }
-      })()
+    const readTask = (async () => {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
 
-      await writer.write(data.buffer as ArrayBuffer)
-      await writer.close()
-      await readTask
-
-      const result = new Uint8Array(totalLength)
-      let offset = 0
-
-      for (const chunk of chunks) {
-        result.set(chunk, offset)
-        offset += chunk.length
+        chunks.push(value)
+        totalLength += value.length
       }
+    })()
 
-      return result
+    await writer.write(data.buffer as ArrayBuffer)
+    await writer.close()
+    await readTask
+
+    const result = new Uint8Array(totalLength)
+    let offset = 0
+
+    for (const chunk of chunks) {
+      result.set(chunk, offset)
+
+      offset += chunk.length
     }
 
-    throw new Error('DecompressionStream not supported in this browser')
+    return result
   }
 
   /**
@@ -191,11 +194,11 @@ export class MnistLoader {
   preprocessCanvasData(imageData: ImageData): number[] {
     const inputs: number[] = []
     const { width, height, data } = imageData
-    const stepX = width / 28
-    const stepY = height / 28
+    const stepX = width / MNIST_IMAGE_DIMENSIONS.cols
+    const stepY = height / MNIST_IMAGE_DIMENSIONS.rows
 
-    for (let y = 0; y < 28; y++) {
-      for (let x = 0; x < 28; x++) {
+    for (let y = 0; y < MNIST_IMAGE_DIMENSIONS.rows; y++) {
+      for (let x = 0; x < MNIST_IMAGE_DIMENSIONS.cols; x++) {
         const srcX = Math.floor(x * stepX)
         const srcY = Math.floor(y * stepY)
         const idx = (srcY * width + srcX) * 4
