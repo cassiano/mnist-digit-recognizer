@@ -220,8 +220,8 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
                 const isActive = neuron.activation > 0.1
                 const intensity = Math.min(1, neuron.activation)
                 const baseColor = l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'
-                const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, #1a1a2e)`
-                const strokeColor = isActive ? baseColor : '#444'
+                const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, #f5f5f5)`
+                const strokeColor = isActive ? baseColor : '#999'
                 const r = layer.size <= 12 ? 14 : 10
 
                 return (
@@ -259,7 +259,7 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
                 x={layer.x}
                 y={svgHeight - 8}
                 textAnchor="middle"
-                fill="#ccc"
+                fill="#333"
                 fontSize="14"
                 fontFamily="var(--sans)"
               >
@@ -271,7 +271,7 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
                 x={layer.x}
                 y={svgHeight - 8 + 18}
                 textAnchor="middle"
-                fill="#777"
+                fill="#666"
                 fontSize="12"
                 fontFamily="var(--mono)"
               >

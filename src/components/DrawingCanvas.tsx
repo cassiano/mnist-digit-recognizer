@@ -122,7 +122,7 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         style={{
-          border: '2px solid #444',
+          border: '2px solid #ccc',
           borderRadius: '8px',
           cursor: disabled ? 'not-allowed' : 'crosshair',
           background: '#000',
