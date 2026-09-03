@@ -153,16 +153,16 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         }
 
         let i = 0
-        // Chunked processing: process samples for ~16ms, then yield to event loop
         const aborted = await new Promise<boolean>(resolve => {
           const chunk = () => {
             if (abortRef.current) {
               resolve(true)
               return
             }
+            // Longer budget when hidden, but still yield periodically for progress updates
+            const budget = document.hidden ? 500 : 16
             const start = performance.now()
-            // Process samples until we've used ~16ms (one frame at 60fps)
-            while (i < indices.length && performance.now() - start < 16) {
+            while (i < indices.length && performance.now() - start < budget) {
               if (abortRef.current) {
                 resolve(true)
                 return
@@ -178,7 +178,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
             updateDOM((processed / total) * 100, epoch + 1, epochs, processed, total)
             onTrainingTickRef.current?.()
             if (i < indices.length) {
-              setTimeout(chunk, 0) // schedule next chunk
+              setTimeout(chunk, 0)
             } else {
               resolve(false)
             }
