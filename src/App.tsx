@@ -29,6 +29,8 @@ import type { Prediction } from './neural-network/types'
 /** localStorage key for persisting the trained model */
 const STORAGE_KEY = 'mnist-nn-model-v2'
 
+const DEFAULT_HIDDEN_LAYER_SIZE = 16
+
 /**
  * Creates a new network with the given hidden layer sizes.
  * Architecture: [784, ...hiddenLayerSizes, 10]
@@ -109,7 +111,7 @@ function App() {
       }
     }
 
-    const sizes = [16, 16]
+    const sizes = [DEFAULT_HIDDEN_LAYER_SIZE, DEFAULT_HIDDEN_LAYER_SIZE]
 
     return { sizes, network: buildNetwork(sizes), trained: false }
   })
@@ -179,9 +181,9 @@ function App() {
     }
   }
 
-  /** Adds a new hidden layer with 16 neurons to the architecture */
+  /** Adds a new hidden layer with the default size to the architecture */
   const addLayer = () => {
-    const newSizes = [...hiddenLayerSizes, 16]
+    const newSizes = [...hiddenLayerSizes, DEFAULT_HIDDEN_LAYER_SIZE]
 
     setHiddenLayerSizes(newSizes)
     setNetwork(buildNetwork(newSizes))
