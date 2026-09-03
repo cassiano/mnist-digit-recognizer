@@ -172,6 +172,7 @@ function App() {
       const result = net.predict(inputs)
 
       setPrediction(result)
+      setTrainingTick(t => t + 1)
       setStatus(
         `Recognized digit: ${result.digit} with ${(result.confidence * 100).toFixed(2)}% confidence`,
       )

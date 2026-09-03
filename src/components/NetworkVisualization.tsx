@@ -37,8 +37,8 @@ export function NetworkVisualization({
     return maxH
   }
 
-  const getLayerDisplay = (size: number) => {
-    if (size <= maxDisplayNeurons)
+  const getLayerDisplay = (size: number, isInputLayer: boolean) => {
+    if (!isInputLayer || size <= maxDisplayNeurons)
       return {
         neurons: Array.from({ length: size }, (_, i) => i),
         hasEllipsis: false,
@@ -78,7 +78,7 @@ export function NetworkVisualization({
     return layerSizes.map((size, l) => {
       const x = layerSpacing * (l + 1)
       const h = getLayerHeight(size)
-      const display = getLayerDisplay(size)
+      const display = getLayerDisplay(size, l === 0)
       const yPositions = display.neurons.map((_, i) =>
         getNeuronY(i, display.neurons.length, h),
       )
@@ -248,19 +248,33 @@ export function NetworkVisualization({
                 const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, #f5f5f5)`
                 const strokeColor = isActive ? baseColor : '#999'
                 const r = layer.size <= 12 ? 14 : 10
+                const isOutputLayer = l === layerData.length - 1
 
                 return (
-                  <circle
-                    key={i}
-                    cx={neuron.x}
-                    cy={neuron.y}
-                    r={r}
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={isActive ? 2 : 0.8}
-                    opacity={0.7 + intensity * 0.3}
-                    filter={isActive ? 'url(#neuron-glow)' : undefined}
-                  />
+                  <g key={i}>
+                    <circle
+                      cx={neuron.x}
+                      cy={neuron.y}
+                      r={r}
+                      fill={fillColor}
+                      stroke={strokeColor}
+                      strokeWidth={isActive ? 2 : 0.8}
+                      opacity={0.7 + intensity * 0.3}
+                      filter={isActive ? 'url(#neuron-glow)' : undefined}
+                    />
+                    {isOutputLayer && (
+                      <text
+                        x={neuron.x + r + 6}
+                        y={neuron.y + 4}
+                        fill="#333"
+                        fontSize="11"
+                        fontFamily="var(--mono)"
+                        fontWeight="600"
+                      >
+                        {neuron.origIndex}
+                      </text>
+                    )}
+                  </g>
                 )
               })}
 
