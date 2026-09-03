@@ -54,6 +54,7 @@ function buildNetwork(hiddenLayerSizes: number[]) {
 function loadSavedState(): {
   network: Network
   hiddenLayerSizes: number[]
+  results: { epoch: number; loss: number; accuracy: number }[]
 } | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -87,7 +88,16 @@ function loadSavedState(): {
     // Extract hidden layer sizes (exclude input 784 and output 10)
     const hiddenLayerSizes = net.layers.map(l => l.outputSize).slice(0, -1)
 
-    return { network: net, hiddenLayerSizes }
+    // Load training results
+    let results: { epoch: number; loss: number; accuracy: number }[] = []
+    try {
+      const savedResults = localStorage.getItem('mnist-nn-results-v2')
+      if (savedResults) results = JSON.parse(savedResults)
+    } catch {
+      // Ignore parse errors
+    }
+
+    return { network: net, hiddenLayerSizes, results }
   } catch {
     localStorage.removeItem(STORAGE_KEY)
 
@@ -108,12 +118,13 @@ function App() {
         sizes: saved.hiddenLayerSizes,
         network: saved.network,
         trained: true,
+        results: saved.results,
       }
     }
 
     const sizes = [DEFAULT_HIDDEN_LAYER_SIZE, DEFAULT_HIDDEN_LAYER_SIZE]
 
-    return { sizes, network: buildNetwork(sizes), trained: false }
+    return { sizes, network: buildNetwork(sizes), trained: false, results: [] }
   })
 
   const [hiddenLayerSizes, setHiddenLayerSizes] = useState(initData.sizes)
@@ -217,6 +228,7 @@ function App() {
   /** Resets the model: clears localStorage and creates a fresh untrained network */
   const handleReset = () => {
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem('mnist-nn-results-v2')
 
     const fresh = buildNetwork(hiddenLayerSizes)
 
@@ -289,6 +301,7 @@ function App() {
             onTrained={handleTrained}
             onModelSaved={handleModelSaved}
             onTrainingTick={handleTrainingTick}
+            initialResults={initData.results}
           />
         </div>
 

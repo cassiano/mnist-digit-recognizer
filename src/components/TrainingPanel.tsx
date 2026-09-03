@@ -21,21 +21,24 @@ import type { TrainingResult } from '../neural-network/types'
 
 /** localStorage key for persisting the trained model */
 const STORAGE_KEY = 'mnist-nn-model-v2'
+/** localStorage key for persisting training results */
+const RESULTS_KEY = 'mnist-nn-results-v2'
 
 interface TrainingPanelProps {
   network: Network
   onTrained: () => void
   onModelSaved: () => void
   onTrainingTick?: () => void
+  initialResults?: TrainingResult[]
 }
 
-export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick }: TrainingPanelProps) {
+export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick, initialResults }: TrainingPanelProps) {
   const [status, setStatus] = useState('Ready to train')
   const [epochs, setEpochs] = useState(5)
   const [learningRate, setLearningRate] = useState(0.01)
   const [batchSize, setBatchSize] = useState(64)
   const [isTraining, setIsTraining] = useState(false)
-  const [results, setResults] = useState<TrainingResult[]>([])
+  const [results, setResults] = useState<TrainingResult[]>(initialResults ?? [])
 
   // Refs to access current values in async callbacks without stale closures
   const networkRef = useRef(network)
@@ -81,10 +84,11 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
     if (samplesLabelRef.current) samplesLabelRef.current.textContent = `${processed.toLocaleString()} / ${total.toLocaleString()} samples`
   }
 
-  /** Saves the current network weights/biases to localStorage */
-  const saveModel = () => {
+  /** Saves the current network weights/biases and training results to localStorage */
+  const saveModel = (epochResults: TrainingResult[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, networkRef.current.serialize())
+      localStorage.setItem(RESULTS_KEY, JSON.stringify(epochResults))
       onModelSavedRef.current()
     } catch {
       setStatus('Error: could not save model')
@@ -211,7 +215,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         setResults([...epochResults])
       }
 
-      saveModel()
+      saveModel(epochResults)
 
       if (!abortRef.current) {
         setStatus('Training complete! Model saved.')
