@@ -59,12 +59,20 @@ main {
   display: grid;
   grid-template-columns: 0.5fr 1fr 1fr;
   grid-template-rows: auto auto;
+  grid-template-areas:
+    "arch training canvas"
+    "viz  viz      canvas";
   gap: 24px;
 }
 
 @media (max-width: 1200px) {
   main {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "arch"
+      "training"
+      "canvas"
+      "viz";
   }
 }
 
@@ -74,15 +82,20 @@ main {
   gap: 20px;
 }
 
-.col-span-2 {
-  grid-column: span 2;
+.col-arch {
+  grid-area: arch;
 }
 
-.col-span-all-rows {
-  grid-row: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.col-training {
+  grid-area: training;
+}
+
+.col-canvas {
+  grid-area: canvas;
+}
+
+.col-viz {
+  grid-area: viz;
 }
 
 .center-panel {
@@ -161,10 +174,6 @@ h4 {
 }
 
 /* Network Visualization */
-.col-span-2 {
-  grid-column: span 2;
-}
-
 .network-visualization {
   background: var(--surface);
   border: 1px solid var(--border);

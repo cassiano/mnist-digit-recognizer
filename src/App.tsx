@@ -233,7 +233,7 @@ function App() {
 
       <main>
         {/* Column 1: Architecture configuration */}
-        <div className="col">
+        <div className="col col-arch">
           <div className="architecture-config">
             <h3>Architecture</h3>
             <div className="layers-list">
@@ -280,7 +280,7 @@ function App() {
         </div>
 
         {/* Column 2: Network info + Training configuration */}
-        <div className="col">
+        <div className="col col-training">
           <NetworkInfo network={network} />
           <TrainingPanel
             network={network}
@@ -291,7 +291,7 @@ function App() {
         </div>
 
         {/* Column 3: Drawing canvas + status + prediction (spans all rows) */}
-        <div className="col center-panel col-span-all-rows">
+        <div className="col col-canvas center-panel">
           <DrawingCanvas onRecognize={handleRecognize} disabled={!isTrained} />
           <div className="status-bar">
             <p>{status}</p>
@@ -300,7 +300,7 @@ function App() {
         </div>
 
         {/* Cols 1-2, Row 2: Network visualization diagram */}
-        <div className="col-span-2">
+        <div className="col col-viz">
           <NetworkVisualization network={network} trainingTick={trainingTick} />
         </div>
       </main>
