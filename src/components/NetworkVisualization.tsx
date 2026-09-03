@@ -20,43 +20,31 @@ interface NetworkVisualizationProps {
   trainingTick?: number
 }
 
-export function NetworkVisualization({ network, trainingTick }: NetworkVisualizationProps) {
-  /** Layer sizes including input: [784, hidden1, hidden2, ..., 10] */
-  const layerSizes = [784, ...network.layers.map(l => l.outputSize)]
-  const layerLabels = ['Input', ...network.layers.map((_l, i) =>
-    i === network.layers.length - 1 ? 'Output' : `Hidden ${i + 1}`
-  )]
-  const layerActivations = network.layers.map(layer => layer.activation)
-
+export function NetworkVisualization({
+  network,
+  trainingTick,
+}: NetworkVisualizationProps) {
   const svgWidth = 1100
   const svgHeight = 480
-  /** Maximum neurons to display per layer before truncating with ellipsis */
   const maxDisplayNeurons = 8
   const paddingY = 50
 
-  /** Horizontal spacing between layer centers */
-  const layerSpacing = svgWidth / (layerSizes.length + 1)
-
-  /**
-   * Calculates the vertical height allocated to a layer's neurons.
-   * Small layers get proportional height; large layers fill the available space.
-   */
   const getLayerHeight = (size: number) => {
     const maxH = svgHeight - paddingY * 2 - 30
+
     if (size <= maxDisplayNeurons) return Math.max(60, size * 28)
+
     return maxH
   }
 
-  /**
-   * Determines which neurons to display and whether to show an ellipsis.
-   * For layers with more neurons than maxDisplayNeurons, shows the first
-   * and last half of neurons with ⋮ in between.
-   */
   const getLayerDisplay = (size: number) => {
-    if (size <= maxDisplayNeurons) {
-      return { neurons: Array.from({ length: size }, (_, i) => i), hasEllipsis: false }
-    }
+    if (size <= maxDisplayNeurons)
+      return {
+        neurons: Array.from({ length: size }, (_, i) => i),
+        hasEllipsis: false,
+      }
     const half = Math.floor(maxDisplayNeurons / 2)
+
     return {
       neurons: [
         ...Array.from({ length: half }, (_, i) => i),
@@ -66,23 +54,34 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
     }
   }
 
-  /** Calculates the Y position for a neuron, evenly spaced within the layer height */
-  const getNeuronY = (index: number, total: number, layerHeight: number): number => {
+  const getNeuronY = (
+    index: number,
+    total: number,
+    layerHeight: number,
+  ): number => {
     const startY = (svgHeight - layerHeight) / 2
     if (total === 1) return startY + layerHeight / 2
     return startY + (index / (total - 1)) * layerHeight
   }
 
-  /**
-   * Computes layer geometry and neuron positions.
-   * Memoized on network.layers to avoid recalculating on every render.
-   */
   const layerData = useMemo(() => {
+    const layerSizes = [784, ...network.layers.map(l => l.outputSize)]
+    const layerLabels = [
+      'Input',
+      ...network.layers.map((_l, i) =>
+        i === network.layers.length - 1 ? 'Output' : `Hidden ${i + 1}`,
+      ),
+    ]
+    const layerActivations = network.layers.map(layer => layer.activation)
+    const layerSpacing = svgWidth / (layerSizes.length + 1)
+
     return layerSizes.map((size, l) => {
       const x = layerSpacing * (l + 1)
       const h = getLayerHeight(size)
       const display = getLayerDisplay(size)
-      const yPositions = display.neurons.map((_, i) => getNeuronY(i, display.neurons.length, h))
+      const yPositions = display.neurons.map((_, i) =>
+        getNeuronY(i, display.neurons.length, h),
+      )
 
       const neurons: {
         x: number
@@ -94,17 +93,29 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
       for (let i = 0; i < display.neurons.length; i++) {
         const origIdx = display.neurons[i]
         let activation = 0
+
         if (l > 0 && network.layers[l - 1].outputs.length > 0) {
           activation = network.layers[l - 1].outputs[origIdx] ?? 0
         } else if (l === 0) {
           activation = 1
         }
+
         neurons.push({ x, y: yPositions[i], activation, origIndex: origIdx })
       }
 
-      return { x, h, size, display, neurons, label: layerLabels[l], activation: layerActivations[l - 1] ?? 'input' }
+      return {
+        x,
+        h,
+        size,
+        display,
+        neurons,
+        label: layerLabels[l],
+        activation: layerActivations[l - 1] ?? 'input',
+      }
     })
-  }, [network.layers, layerSizes.toString(), trainingTick])
+    // trainingTick forces recalculation when network outputs change during training
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [network.layers, trainingTick])
 
   /**
    * Computes all connection lines between consecutive layers.
@@ -127,18 +138,22 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
 
       // Find max absolute weight in this layer pair for normalization
       let maxAbs = 0
+
       for (const n of next.neurons) {
         for (const c of curr.neurons) {
           const w = network.layers[l].neurons[n.origIndex].weights[c.origIndex]
+
           if (Math.abs(w) > maxAbs) maxAbs = Math.abs(w)
         }
       }
+
       if (maxAbs === 0) maxAbs = 1
 
       // Create a connection line for each weight
       for (const n of next.neurons) {
         for (const c of curr.neurons) {
           const w = network.layers[l].neurons[n.origIndex].weights[c.origIndex]
+
           conns.push({
             x1: curr.x,
             y1: c.y,
@@ -168,7 +183,13 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
             </feMerge>
           </filter>
           {/* Subtle glow filter for connections */}
-          <filter id="connection-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <filter
+            id="connection-glow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
             <feGaussianBlur stdDeviation="1.5" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -200,7 +221,8 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
 
         {/* Draw layers: background rect, neurons, labels */}
         {layerData.map((layer, l) => {
-          const actLabel = l === 0 ? '' : layerActivations[l - 1] === 'softmax' ? 'softmax' : 'relu'
+          const actLabel =
+            l === 0 ? '' : layer.activation === 'softmax' ? 'softmax' : 'relu'
 
           return (
             <g key={l}>
@@ -211,7 +233,9 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
                 width={60}
                 height={layer.h + 16}
                 rx={14}
-                fill={l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'}
+                fill={
+                  l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'
+                }
                 opacity={0.08}
               />
 
@@ -219,7 +243,8 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
               {layer.neurons.map((neuron, i) => {
                 const isActive = neuron.activation > 0.1
                 const intensity = Math.min(1, neuron.activation)
-                const baseColor = l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'
+                const baseColor =
+                  l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'
                 const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, #f5f5f5)`
                 const strokeColor = isActive ? baseColor : '#999'
                 const r = layer.size <= 12 ? 14 : 10

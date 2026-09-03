@@ -16,7 +16,7 @@
  * completion and restored on page reload. The architecture is derived from the
  * saved layer sizes.
  */
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Network } from './neural-network/Network'
 import { MnistLoader } from './mnist/MnistLoader'
 import { DrawingCanvas } from './components/DrawingCanvas'
@@ -129,8 +129,9 @@ function App() {
       : 'Network initialized. Please train the network first.',
   )
 
-  // Keep ref in sync with state for use in handleRecognize
-  networkRef.current = network
+  useEffect(() => {
+    networkRef.current = network
+  })
 
   const layerDescription = `784 → ${hiddenLayerSizes.join(' → ')} → 10`
 
