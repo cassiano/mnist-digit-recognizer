@@ -209,4 +209,26 @@ export class MnistLoader {
 
     return inputs
   }
+
+  imageAsText(type: 'trainData' | 'testData', index: number): string {
+    const dataset = this[type]
+    if (!dataset) throw new Error('Data not loaded. Call load() first.')
+
+    const image = dataset.inputs[index]
+    if (!image) throw new Error(`Image index out of bounds: ${index}`)
+
+    let text = ''
+
+    for (let row = 0; row < MNIST_IMAGE_DIMENSIONS.rows; row++) {
+      for (let col = 0; col < MNIST_IMAGE_DIMENSIONS.cols; col++) {
+        const pixelIndex = row * MNIST_IMAGE_DIMENSIONS.cols + col
+
+        text += image[pixelIndex] === 0 ? ' ' : '◻️'
+      }
+
+      text += '\n'
+    }
+
+    return text
+  }
 }
