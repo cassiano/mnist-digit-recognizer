@@ -159,10 +159,9 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
               resolve(true)
               return
             }
-            // Longer budget when hidden, but still yield periodically for progress updates
-            const budget = document.hidden ? 500 : 16
-            const start = performance.now()
-            while (i < indices.length && performance.now() - start < budget) {
+            const batchSize = document.hidden ? 2000 : 100
+            const end = Math.min(i + batchSize, indices.length)
+            while (i < end) {
               if (abortRef.current) {
                 resolve(true)
                 return
@@ -174,12 +173,18 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
               net.backward(trainingData.labels[idx], currentLR)
               i++
             }
-            const processed = epoch * indices.length + i
-            updateDOM((processed / total) * 100, epoch + 1, epochs, processed, total)
-            onTrainingTickRef.current?.()
+            if (!document.hidden) {
+              const processed = epoch * indices.length + i
+              updateDOM((processed / total) * 100, epoch + 1, epochs, processed, total)
+              onTrainingTickRef.current?.()
+            }
             if (i < indices.length) {
               setTimeout(chunk, 0)
             } else {
+              if (document.hidden) {
+                updateDOM(((epoch + 1) / epochs) * 100, epoch + 1, epochs, (epoch + 1) * indices.length, total)
+                onTrainingTickRef.current?.()
+              }
               resolve(false)
             }
           }
