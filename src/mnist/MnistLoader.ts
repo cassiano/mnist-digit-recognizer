@@ -241,7 +241,7 @@ export class MnistLoader {
         )
         const unicodeChar = gradient[charIndex]
 
-        text += unicodeChar + unicodeChar
+        text += unicodeChar.repeat(2)
       }
 
       text += '\n'
