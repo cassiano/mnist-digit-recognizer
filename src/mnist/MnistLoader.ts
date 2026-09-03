@@ -1,10 +1,10 @@
 import type { TrainingData } from '../neural-network/types'
 
 const MNIST_URLS = {
-  trainImages: '/mnist/train-images-idx3-ubyte',
-  trainLabels: '/mnist/train-labels-idx1-ubyte',
-  testImages: '/mnist/t10k-images-idx3-ubyte',
-  testLabels: '/mnist/t10k-labels-idx1-ubyte',
+  trainImages: 'mnist/train-images-idx3-ubyte',
+  trainLabels: 'mnist/train-labels-idx1-ubyte',
+  testImages: 'mnist/t10k-images-idx3-ubyte',
+  testLabels: 'mnist/t10k-labels-idx1-ubyte',
 }
 
 export class MnistLoader {
