@@ -26,9 +26,10 @@ interface TrainingPanelProps {
   network: Network
   onTrained: () => void
   onModelSaved: () => void
+  onTrainingTick?: () => void
 }
 
-export function TrainingPanel({ network, onTrained, onModelSaved }: TrainingPanelProps) {
+export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick }: TrainingPanelProps) {
   const [status, setStatus] = useState('Ready to train')
   const [epochs, setEpochs] = useState(5)
   const [learningRate, setLearningRate] = useState(0.01)
@@ -43,6 +44,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved }: TrainingPane
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onTrainedRef = useRef(onTrained)
   const onModelSavedRef = useRef(onModelSaved)
+  const onTrainingTickRef = useRef(onTrainingTick)
 
   // Direct DOM refs for progress bar updates (avoids React re-render overhead)
   const progressFillRef = useRef<HTMLDivElement>(null)
@@ -55,6 +57,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved }: TrainingPane
   useEffect(() => {
     onTrainedRef.current = onTrained
     onModelSavedRef.current = onModelSaved
+    onTrainingTickRef.current = onTrainingTick
   })
 
   /** Create a fresh MnistLoader instance on mount */
@@ -173,6 +176,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved }: TrainingPane
             }
             const processed = epoch * indices.length + i
             updateDOM((processed / total) * 100, epoch + 1, epochs, processed, total)
+            onTrainingTickRef.current?.()
             if (i < indices.length) {
               setTimeout(chunk, 0) // schedule next chunk
             } else {

@@ -120,6 +120,7 @@ function App() {
   const networkRef = useRef(network)
   const [isTrained, setIsTrained] = useState(initData.trained)
   const [prediction, setPrediction] = useState<Prediction | null>(null)
+  const [trainingTick, setTrainingTick] = useState(0)
   const [status, setStatus] = useState(
     initData.trained
       ? 'Model loaded from previous session.'
@@ -140,6 +141,11 @@ function App() {
   /** Called by TrainingPanel after model is saved to localStorage */
   const handleModelSaved = () => {
     setStatus('Model saved to local storage.')
+  }
+
+  /** Called periodically during training to update the network visualization */
+  const handleTrainingTick = () => {
+    setTrainingTick(t => t + 1)
   }
 
   /**
@@ -278,6 +284,7 @@ function App() {
             network={network}
             onTrained={handleTrained}
             onModelSaved={handleModelSaved}
+            onTrainingTick={handleTrainingTick}
           />
         </div>
 
@@ -292,7 +299,7 @@ function App() {
 
         {/* Cols 1-2, Row 2: Network visualization diagram */}
         <div className="col-span-2">
-          <NetworkVisualization network={network} />
+          <NetworkVisualization network={network} trainingTick={trainingTick} />
         </div>
       </main>
     </div>

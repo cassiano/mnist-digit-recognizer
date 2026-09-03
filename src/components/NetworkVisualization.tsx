@@ -17,9 +17,10 @@ import type { Network } from '../neural-network/Network'
 
 interface NetworkVisualizationProps {
   network: Network
+  trainingTick?: number
 }
 
-export function NetworkVisualization({ network }: NetworkVisualizationProps) {
+export function NetworkVisualization({ network, trainingTick }: NetworkVisualizationProps) {
   /** Layer sizes including input: [784, hidden1, hidden2, ..., 10] */
   const layerSizes = [784, ...network.layers.map(l => l.outputSize)]
   const layerLabels = ['Input', ...network.layers.map((_l, i) =>
@@ -103,7 +104,7 @@ export function NetworkVisualization({ network }: NetworkVisualizationProps) {
 
       return { x, h, size, display, neurons, label: layerLabels[l], activation: layerActivations[l - 1] ?? 'input' }
     })
-  }, [network.layers, layerSizes.toString()])
+  }, [network.layers, layerSizes.toString(), trainingTick])
 
   /**
    * Computes all connection lines between consecutive layers.
