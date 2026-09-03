@@ -193,7 +193,6 @@ export function TrainingPanel({ network, onTrained, onModelSaved }: TrainingPane
         }
 
         const testAccuracy = testCorrect / testData.inputs.length
-        console.log(`[Train] epoch ${epoch + 1}: train_acc=${(correct / trainingData.inputs.length * 100).toFixed(1)}% test_acc=${(testAccuracy * 100).toFixed(1)}%`)
         const result: TrainingResult = {
           epoch: epoch + 1,
           loss: 0,
@@ -203,44 +202,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved }: TrainingPane
         setResults([...epochResults])
       }
 
-      // Auto-save model after training completes
       saveModel()
-
-      // Diagnostic: verify weights aren't dead after training
-      console.log('[Train] === POST-TRAIN WEIGHT CHECK ===')
-      for (let l = 0; l < net.layers.length; l++) {
-        const layer = net.layers[l]
-        const allW = layer.neurons.flatMap(n => n.weights)
-        const absAvg = allW.reduce((a, b) => a + Math.abs(b), 0) / allW.length
-        const allZero = allW.every(w => w === 0)
-        const allSame = allW.every(w => w === allW[0])
-        console.log(`[Train] layer ${l}: avgAbs=${absAvg.toFixed(6)} allZero=${allZero} allSame=${allSame} count=${allW.length}`)
-      }
-
-      // Diagnostic: sanity check on first 20 test samples
-      console.log('[Train] === MNIST SANITY CHECK (first 20 test samples) ===')
-      let sanityCorrect = 0
-      for (let ti = 0; ti < Math.min(20, testData.inputs.length); ti++) {
-        const input = testData.inputs[ti]
-        const output = net.forward(input)
-
-        if (ti === 0) {
-          const nonZero = input.filter(v => v > 0).length
-          console.log(`[Train] sample input: nonZero=${nonZero} len=${input.length} first20=${JSON.stringify(input.slice(0, 20))}`)
-          for (let l = 0; l < net.layers.length; l++) {
-            const layer = net.layers[l]
-            const layerOut = layer.outputs
-            const outNonZero = layerOut.filter(v => v !== 0).length
-            const preActNonZero = layer.preActivations.filter(v => v > 0).length
-            console.log(`[Train] layer ${l} output: nonZero=${outNonZero}/${layerOut.length} preAct>0=${preActNonZero}/${layer.preActivations.length} sample=${JSON.stringify(layerOut.slice(0, 8).map(v => +v.toFixed(4)))}`)
-          }
-        }
-
-        const predicted = output.indexOf(Math.max(...output))
-        if (predicted === testData.labels[ti]) sanityCorrect++
-        console.log(`[Train] sample ${ti}: predicted=${predicted} actual=${testData.labels[ti]} probs=${JSON.stringify(output.map(p => +p.toFixed(4)))}`)
-      }
-      console.log(`[Train] sanity accuracy: ${sanityCorrect}/20`)
 
       if (!abortRef.current) {
         setStatus('Training complete! Model saved.')

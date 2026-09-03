@@ -158,63 +158,15 @@ function App() {
     }
 
     try {
-      // Downsample canvas to 28×28 and normalize to [0, 1]
       const inputs = sharedMnistLoader.preprocessCanvasData(imageData)
-
-      const nonZero = inputs.filter(v => v > 0).length
-      const maxVal = Math.max(...inputs)
-      console.log(
-        '[Recognize] input length:',
-        inputs.length,
-        'nonZero:',
-        nonZero,
-        'maxVal:',
-        maxVal,
-      )
-      console.log(
-        '[Recognize] input sample:',
-        JSON.stringify(inputs.slice(300, 420)),
-      )
-
       const net = networkRef.current
-
-      // Diagnostic: log weight statistics per layer
-      for (let l = 0; l < net.layers.length; l++) {
-        const layer = net.layers[l]
-        const allW = layer.neurons.flatMap(n => n.weights)
-        const allB = layer.neurons.map(n => n.bias)
-        const absAvg = allW.reduce((a, b) => a + Math.abs(b), 0) / allW.length
-        const wMin = Math.min(...allW)
-        const wMax = Math.max(...allW)
-
-        console.log(
-          `[Recognize] layer ${l} weights: avgAbs=${absAvg.toFixed(6)} min=${wMin.toFixed(6)} max=${wMax.toFixed(6)} allZero=${allW.every(w => w === 0)}`,
-        )
-        console.log(
-          `[Recognize] layer ${l} biases:`,
-          JSON.stringify(allB.slice(0, 5)),
-        )
-      }
-
       const result = net.predict(inputs)
-
-      console.log(
-        '[Recognize] probs:',
-        JSON.stringify(result.probabilities.map(p => +p.toFixed(4))),
-      )
-      console.log(
-        '[Recognize] digit:',
-        result.digit,
-        'conf:',
-        result.confidence.toFixed(4),
-      )
 
       setPrediction(result)
       setStatus(
         `Recognized digit: ${result.digit} with ${(result.confidence * 100).toFixed(2)}% confidence`,
       )
     } catch (error) {
-      console.error('[Recognize] error:', error)
       setStatus(
         `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
