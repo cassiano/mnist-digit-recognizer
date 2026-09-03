@@ -254,28 +254,29 @@ export function NetworkVisualization({ network, trainingTick }: NetworkVisualiza
                 </text>
               )}
 
-              {/* Layer name label (e.g., "Hidden 1", "Output") */}
+              {/* Layer size inside the rectangle */}
+              <text
+                x={layer.x}
+                y={(svgHeight - layer.h) / 2 - 20}
+                textAnchor="middle"
+                fill="#666"
+                fontSize="13"
+                fontFamily="var(--mono)"
+                fontWeight="600"
+              >
+                {layer.size}
+              </text>
+
+              {/* Layer name label */}
               <text
                 x={layer.x}
                 y={svgHeight - 8}
                 textAnchor="middle"
                 fill="#333"
-                fontSize="14"
+                fontSize="13"
                 fontFamily="var(--sans)"
               >
                 {layer.label}
-              </text>
-
-              {/* Neuron count label */}
-              <text
-                x={layer.x}
-                y={svgHeight - 8 + 18}
-                textAnchor="middle"
-                fill="#666"
-                fontSize="12"
-                fontFamily="var(--mono)"
-              >
-                {layer.size}
               </text>
 
               {/* Activation function label (e.g., "relu", "softmax") */}
