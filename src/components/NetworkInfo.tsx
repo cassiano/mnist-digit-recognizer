@@ -5,27 +5,33 @@
  * from the Network class to compute statistics. This is a read-only display
  * component that updates whenever the network changes.
  */
-import { Network } from '../neural-network/Network';
+import { Network } from '../neural-network/Network'
 
 interface NetworkInfoProps {
-  network: Network;
+  network: Network
 }
 
 export function NetworkInfo({ network }: NetworkInfoProps) {
-  const info = network.getNetworkInfo();
+  const info = network.getNetworkInfo()
 
   return (
     <div className="network-info">
-      <h3>Network Architecture</h3>
+      <h3>Network Architecture Summary</h3>
       <div className="architecture">
         {info.layerDetails.map((layer, idx) => (
           <div key={idx} className="layer-info">
             <div className="layer-label">
-              {idx === info.layerDetails.length - 1 ? 'Output' : `Hidden ${idx + 1}`}
+              {idx === info.layerDetails.length - 1
+                ? 'Output'
+                : `Hidden ${idx + 1}`}
             </div>
             <div className="layer-neurons">{layer.neurons} neurons</div>
-            <div className="layer-weights">{layer.weights.toLocaleString()} parameters</div>
-            {idx < info.layerDetails.length - 1 && <div className="layer-arrow">→</div>}
+            <div className="layer-weights">
+              {layer.weights.toLocaleString()} parameters
+            </div>
+            {idx < info.layerDetails.length - 1 && (
+              <div className="layer-arrow">→</div>
+            )}
           </div>
         ))}
       </div>
@@ -34,5 +40,5 @@ export function NetworkInfo({ network }: NetworkInfoProps) {
         <p>Total Parameters: {info.totalWeights.toLocaleString()}</p>
       </div>
     </div>
-  );
+  )
 }

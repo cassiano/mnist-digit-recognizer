@@ -235,7 +235,7 @@ function App() {
         {/* Column 1: Architecture configuration */}
         <div className="col col-arch">
           <div className="architecture-config">
-            <h3>Architecture</h3>
+            <h3>Network Architecture Configuration</h3>
             <div className="layers-list">
               <div className="layer-row input-row">
                 <span className="layer-type">Input</span>
@@ -277,11 +277,11 @@ function App() {
               Reset Model
             </button>
           )}
+          <NetworkInfo network={network} />
         </div>
 
         {/* Column 2: Network info + Training configuration */}
         <div className="col col-training">
-          <NetworkInfo network={network} />
           <TrainingPanel
             network={network}
             onTrained={handleTrained}
