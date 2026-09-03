@@ -18,6 +18,7 @@ interface DrawingCanvasProps {
 export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [hasContent, setHasContent] = useState(false)
   /** Tracks the last mouse position to draw continuous lines between frames */
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
 
@@ -50,6 +51,7 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (disabled) return
     setIsDrawing(true)
+    setHasContent(true)
     const point = getCanvasPoint(e)
     if (point) {
       lastPoint.current = point
@@ -97,6 +99,7 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
     if (ctx) {
       ctx.fillStyle = '#000'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
+      setHasContent(false)
     }
   }
 
@@ -130,7 +133,7 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
       />
       <div className="canvas-controls">
         <button onClick={handleClear} disabled={disabled}>Clear</button>
-        <button onClick={handleRecognize} disabled={disabled} className="primary">Recognize</button>
+        <button onClick={handleRecognize} disabled={disabled || !hasContent} className="primary">Recognize</button>
       </div>
     </div>
   )
