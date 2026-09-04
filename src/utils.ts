@@ -22,3 +22,11 @@ export const map = (
     projectedLower
   )
 }
+
+export const timesMap = <T>(count: number, fn: (index: number) => T): T[] => {
+  const results: T[] = []
+
+  for (let i = 0; i < count; i++) results[i] = fn(i)
+
+  return results
+}

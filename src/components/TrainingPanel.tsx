@@ -148,9 +148,9 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         if (abortRef.current) break
 
         let correct = 0
-        // Fisher-Yates shuffle for random sampling each epoch
-        const indices = Array.from({ length: trainingData.inputs.length }, (_, i) => i)
 
+        // Fisher-Yates shuffle for random sampling each epoch
+        const indices = timesMap(trainingData.inputs.length, i => i)
         for (let k = indices.length - 1; k > 0; k--) {
           const j = Math.floor(Math.random() * (k + 1))
           ;[indices[k], indices[j]] = [indices[j], indices[k]]
