@@ -241,7 +241,7 @@ export class MnistLoader {
     const image = dataset.inputs[index]
     if (!image) throw new Error(`Image index out of bounds: ${index}`)
 
-    const gradient = ' .░▒▓▏▎▍▌▋▊▉█'
+    const gradient = ' ░▒▓▉█'
 
     let text = ''
 
