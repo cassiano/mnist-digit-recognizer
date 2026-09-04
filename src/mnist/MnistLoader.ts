@@ -221,6 +221,19 @@ export class MnistLoader {
     return inputs
   }
 
+  /**
+   * Renders an MNIST image as a text-based visualization using Unicode block characters.
+   *
+   * Maps each pixel value (0-1) to a character from a gradient string,
+   * where darker pixels (closer to 0) map to lighter characters and
+   * brighter pixels (closer to 1) map to denser block characters.
+   * Each character is repeated twice to maintain approximate square aspect ratio.
+   *
+   * @param type - 'trainData' for training images, 'testData' for test images
+   * @param index - Index of the image within the selected dataset (0-based)
+   * @returns A string containing the 28×28 image rendered as text with newline-separated rows
+   * @throws If data has not been loaded (call `load()` first) or index is out of bounds
+   */
   imageAsText(type: 'trainData' | 'testData', index: number): string {
     const dataset = this[type]
     if (!dataset) throw new Error('Data not loaded. Call load() first.')
