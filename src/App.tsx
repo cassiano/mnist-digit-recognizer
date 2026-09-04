@@ -41,6 +41,7 @@ const DEFAULT_HIDDEN_LAYER_SIZE = 16
  */
 function buildNetwork(hiddenLayerSizes: number[]) {
   const layers = [784, ...hiddenLayerSizes, 10]
+
   return new Network({ layers, learningRate: 0.01, activation: 'relu' })
 }
 
@@ -93,6 +94,7 @@ function loadSavedState(): {
     let results: { epoch: number; loss: number; accuracy: number }[] = []
     try {
       const savedResults = localStorage.getItem('mnist-nn-results-v2')
+
       if (savedResults) results = JSON.parse(savedResults)
     } catch {
       // Ignore parse errors
