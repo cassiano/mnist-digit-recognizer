@@ -19,11 +19,16 @@ import { Network } from '../neural-network/Network'
 import { MnistLoader } from '../mnist/MnistLoader'
 import type { TrainingResult } from '../neural-network/types'
 import { timesMap } from '../utils'
-
-/** localStorage key for persisting the trained model */
-const STORAGE_KEY = 'mnist-nn-model-v2'
-/** localStorage key for persisting training results */
-const RESULTS_KEY = 'mnist-nn-results-v2'
+import {
+  DEFAULT_EPOCHS,
+  DEFAULT_LEARNING_RATE,
+  DEFAULT_BATCH_SIZE,
+  FOREGROUND_BATCH_SIZE,
+  BACKGROUND_BATCH_SIZE,
+  TIMER_INTERVAL_MS,
+  STORAGE_KEY_MODEL,
+  STORAGE_KEY_RESULTS,
+} from '../constants'
 
 interface TrainingPanelProps {
   network: Network
@@ -41,9 +46,9 @@ export function TrainingPanel({
   initialResults,
 }: TrainingPanelProps) {
   const [status, setStatus] = useState('Ready to train')
-  const [epochs, setEpochs] = useState(5)
-  const [learningRate, setLearningRate] = useState(0.01)
-  const [batchSize, setBatchSize] = useState(64)
+  const [epochs, setEpochs] = useState(DEFAULT_EPOCHS)
+  const [learningRate, setLearningRate] = useState(DEFAULT_LEARNING_RATE)
+  const [batchSize, setBatchSize] = useState(DEFAULT_BATCH_SIZE)
   const [isTraining, setIsTraining] = useState(false)
   const [results, setResults] = useState<TrainingResult[]>(initialResults ?? [])
 
@@ -103,8 +108,8 @@ export function TrainingPanel({
   /** Saves the current network weights/biases and training results to localStorage */
   const saveModel = (epochResults: TrainingResult[]) => {
     try {
-      localStorage.setItem(STORAGE_KEY, networkRef.current.serialize())
-      localStorage.setItem(RESULTS_KEY, JSON.stringify(epochResults))
+      localStorage.setItem(STORAGE_KEY_MODEL, networkRef.current.serialize())
+      localStorage.setItem(STORAGE_KEY_RESULTS, JSON.stringify(epochResults))
       onModelSavedRef.current()
     } catch {
       setStatus('Error: could not save model')
@@ -132,7 +137,6 @@ export function TrainingPanel({
     let elapsed = 0
 
     timerRef.current = setInterval(() => {
-      elapsed++
 
       if (timeLabelRef.current) {
         const mins = Math.floor(elapsed / 60)
@@ -140,7 +144,7 @@ export function TrainingPanel({
 
         timeLabelRef.current.textContent = `${mins}:${secs.toString().padStart(2, '0')}`
       }
-    }, 1000)
+    }, TIMER_INTERVAL_MS)
 
     try {
       // Load MNIST dataset (downloads and decompresses gzipped binary files)
@@ -191,7 +195,7 @@ export function TrainingPanel({
               return
             }
 
-            const batchSize = document.hidden ? 2000 : 100
+            const batchSize = document.hidden ? BACKGROUND_BATCH_SIZE : FOREGROUND_BATCH_SIZE
             const end = Math.min(i + batchSize, indices.length)
 
             while (i < end) {
@@ -315,7 +319,7 @@ export function TrainingPanel({
           <input
             type="number"
             value={learningRate}
-            onChange={e => setLearningRate(parseFloat(e.target.value) || 0.01)}
+            onChange={e => setLearningRate(parseFloat(e.target.value) || DEFAULT_LEARNING_RATE)}
             min={0.001}
             max={1}
             step={0.01}

@@ -1,4 +1,9 @@
 import { Layer } from './Layer'
+import {
+  DEFAULT_LEARNING_RATE,
+  EPSILON,
+  LEARNING_RATE_DECAY,
+} from '../constants'
 import type {
   NetworkConfig,
   TrainingData,
@@ -144,12 +149,12 @@ export class Network {
 
         // Cross-entropy loss: -log(p_target)
         const targetVal = output[labels[idx]]
-        totalLoss += -Math.log(Math.max(targetVal, 1e-15))
+        totalLoss += -Math.log(Math.max(targetVal, EPSILON))
 
         this.backward(labels[idx])
 
         // Learning rate decay: reduce by 0.1% every batchSize samples
-        if (i % batchSize === 0 && i > 0) this.learningRate *= 0.999
+        if (i % batchSize === 0 && i > 0) this.learningRate *= LEARNING_RATE_DECAY
       }
 
       const accuracy = correct / inputs.length
@@ -240,7 +245,7 @@ export class Network {
     ]
     const net = new Network({
       layers: sizes,
-      learningRate: 0.1,
+      learningRate: DEFAULT_LEARNING_RATE,
       activation: 'relu',
     })
 

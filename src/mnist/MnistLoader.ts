@@ -1,7 +1,12 @@
 import type { TrainingData } from '../neural-network/types'
 import { map } from '../utils'
-
-const MNIST_IMAGE_DIMENSIONS = { rows: 28, cols: 28 }
+import {
+  MNIST_IMAGE_ROWS,
+  MNIST_IMAGE_COLS,
+  MNIST_IMAGE_MAGIC,
+  MNIST_LABEL_MAGIC,
+  MNIST_PIXEL_MAX,
+} from '../constants'
 
 // Files in Big Endian IDX format, gzipped.
 const MNIST_URLS = {
@@ -93,7 +98,7 @@ export class MnistLoader {
     const view = new DataView(decompressed.buffer) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView
 
     const magic = view.getUint32(0, false)
-    if (magic !== 2051)
+    if (magic !== MNIST_IMAGE_MAGIC)
       throw new Error(`Invalid magic number for images: ${magic}`)
 
     const count = view.getUint32(4, false)
@@ -107,7 +112,7 @@ export class MnistLoader {
       const image: number[] = []
 
       for (let j = 0; j < rows * cols; j++)
-        image.push(decompressed[offset++] / 255)
+        image.push(decompressed[offset++] / MNIST_PIXEL_MAX)
 
       images.push(image)
     }
@@ -133,7 +138,7 @@ export class MnistLoader {
     const view = new DataView(decompressed.buffer) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView
 
     const magic = view.getUint32(0, false)
-    if (magic !== 2049)
+    if (magic !== MNIST_LABEL_MAGIC)
       throw new Error(`Invalid magic number for labels: ${magic}`)
 
     const count = view.getUint32(4, false)
@@ -205,16 +210,16 @@ export class MnistLoader {
   preprocessCanvasData(imageData: ImageData): number[] {
     const inputs: number[] = []
     const { width, height, data } = imageData
-    const stepX = width / MNIST_IMAGE_DIMENSIONS.cols
-    const stepY = height / MNIST_IMAGE_DIMENSIONS.rows
+    const stepX = width / MNIST_IMAGE_COLS
+    const stepY = height / MNIST_IMAGE_ROWS
 
-    for (let y = 0; y < MNIST_IMAGE_DIMENSIONS.rows; y++) {
-      for (let x = 0; x < MNIST_IMAGE_DIMENSIONS.cols; x++) {
+    for (let y = 0; y < MNIST_IMAGE_ROWS; y++) {
+      for (let x = 0; x < MNIST_IMAGE_COLS; x++) {
         const srcX = Math.floor(x * stepX)
         const srcY = Math.floor(y * stepY)
         const idx = (srcY * width + srcX) * 4
 
-        inputs.push(data[idx] / 255)
+        inputs.push(data[idx] / MNIST_PIXEL_MAX)
       }
     }
 
@@ -245,9 +250,9 @@ export class MnistLoader {
 
     let text = ''
 
-    for (let row = 0; row < MNIST_IMAGE_DIMENSIONS.rows; row++) {
-      for (let col = 0; col < MNIST_IMAGE_DIMENSIONS.cols; col++) {
-        const pixelIndex = row * MNIST_IMAGE_DIMENSIONS.cols + col
+    for (let row = 0; row < MNIST_IMAGE_ROWS; row++) {
+      for (let col = 0; col < MNIST_IMAGE_COLS; col++) {
+        const pixelIndex = row * MNIST_IMAGE_COLS + col
         const value = image[pixelIndex]
         const charIndex = Math.trunc(
           map(value, 0, 1, 0, gradient.length - 1, true),

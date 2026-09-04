@@ -1,3 +1,5 @@
+import { HE_INIT_FACTOR } from '../constants'
+
 /**
  * Represents a single neuron in the neural network.
  *
@@ -27,7 +29,7 @@ export class Neuron {
    * distributed random numbers from uniform random variables.
    */
   private static heInit(count: number): number[] {
-    const scale = Math.sqrt(2 / count)
+    const scale = Math.sqrt(HE_INIT_FACTOR / count)
     const weights: number[] = new Array(count)
 
     for (let i = 0; i < count; i++) {

@@ -26,11 +26,17 @@ import { NetworkVisualization } from './components/NetworkVisualization'
 import { PredictionResult } from './components/PredictionResult'
 import { ThemeToggle } from './components/ThemeToggle'
 import type { Prediction } from './neural-network/types'
-
-/** localStorage key for persisting the trained model */
-const STORAGE_KEY = 'mnist-nn-model-v2'
-
-const DEFAULT_HIDDEN_LAYER_SIZE = 16
+import {
+  INPUT_SIZE,
+  OUTPUT_SIZE,
+  DEFAULT_HIDDEN_LAYER_SIZE,
+  DEFAULT_LEARNING_RATE,
+  MIN_LAYER_SIZE,
+  MAX_LAYER_SIZE,
+  STORAGE_KEY_MODEL,
+  STORAGE_KEY_RESULTS,
+  STORAGE_KEY_THEME,
+} from './constants'
 
 /**
  * Creates a new network with the given hidden layer sizes.
@@ -40,9 +46,9 @@ const DEFAULT_HIDDEN_LAYER_SIZE = 16
  * - Default learning rate: 0.01, activation: ReLU
  */
 function buildNetwork(hiddenLayerSizes: number[]) {
-  const layers = [784, ...hiddenLayerSizes, 10]
+  const layers = [INPUT_SIZE, ...hiddenLayerSizes, OUTPUT_SIZE]
 
-  return new Network({ layers, learningRate: 0.01, activation: 'relu' })
+  return new Network({ layers, learningRate: DEFAULT_LEARNING_RATE, activation: 'relu' })
 }
 
 /**
@@ -59,7 +65,7 @@ function loadSavedState(): {
   results: { epoch: number; loss: number; accuracy: number }[]
 } | null {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
+    const saved = localStorage.getItem(STORAGE_KEY_MODEL)
     if (!saved) return null
 
     const net = Network.deserialize(saved)
@@ -83,7 +89,7 @@ function loadSavedState(): {
     }
 
     if (!hasNonZero) {
-      localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(STORAGE_KEY_MODEL)
       return null
     }
 
@@ -93,7 +99,7 @@ function loadSavedState(): {
     // Load training results
     let results: { epoch: number; loss: number; accuracy: number }[] = []
     try {
-      const savedResults = localStorage.getItem('mnist-nn-results-v2')
+      const savedResults = localStorage.getItem(STORAGE_KEY_RESULTS)
 
       if (savedResults) results = JSON.parse(savedResults)
     } catch {
@@ -102,7 +108,7 @@ function loadSavedState(): {
 
     return { network: net, hiddenLayerSizes, results }
   } catch {
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(STORAGE_KEY_MODEL)
 
     return null
   }
@@ -149,7 +155,7 @@ function App() {
 
   /** Apply saved theme on mount */
   useEffect(() => {
-    const saved = localStorage.getItem('mnist-nn-theme')
+    const saved = localStorage.getItem(STORAGE_KEY_THEME)
     if (saved === 'dark' || saved === 'light') {
       document.documentElement.setAttribute('data-theme', saved)
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -157,7 +163,7 @@ function App() {
     }
   }, [])
 
-  const layerDescription = `784 → ${hiddenLayerSizes.join(' → ')} → 10`
+  const layerDescription = `${INPUT_SIZE} → ${hiddenLayerSizes.join(' → ')} → ${OUTPUT_SIZE}`
 
   /** Called by TrainingPanel after training completes */
   const handleTrained = () => {
@@ -231,7 +237,7 @@ function App() {
   const updateLayer = (index: number, size: number) => {
     const newSizes = [...hiddenLayerSizes]
 
-    newSizes[index] = Math.max(1, Math.min(256, size || 1))
+    newSizes[index] = Math.max(MIN_LAYER_SIZE, Math.min(MAX_LAYER_SIZE, size || MIN_LAYER_SIZE))
 
     setHiddenLayerSizes(newSizes)
     setNetwork(buildNetwork(newSizes))
@@ -240,8 +246,8 @@ function App() {
 
   /** Resets the model: clears localStorage and creates a fresh untrained network */
   const handleReset = () => {
-    localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem('mnist-nn-results-v2')
+    localStorage.removeItem(STORAGE_KEY_MODEL)
+    localStorage.removeItem(STORAGE_KEY_RESULTS)
 
     const fresh = buildNetwork(hiddenLayerSizes)
 
@@ -267,7 +273,7 @@ function App() {
             <div className="layers-list">
               <div className="layer-row input-row">
                 <span className="layer-type">Input</span>
-                <span className="layer-size">784</span>
+                <span className="layer-size">{INPUT_SIZE}</span>
               </div>
               {hiddenLayerSizes.map((size, index) => (
                 <div key={index} className="layer-row">
@@ -278,8 +284,8 @@ function App() {
                     onChange={e =>
                       updateLayer(index, parseInt(e.target.value) || 1)
                     }
-                    min={1}
-                    max={256}
+                    min={MIN_LAYER_SIZE}
+                    max={MAX_LAYER_SIZE}
                   />
                   <button
                     className="remove-btn"
@@ -293,7 +299,7 @@ function App() {
               ))}
               <div className="layer-row output-row">
                 <span className="layer-type">Output</span>
-                <span className="layer-size">10</span>
+                <span className="layer-size">{OUTPUT_SIZE}</span>
               </div>
             </div>
             <button className="add-layer-btn" onClick={addLayer}>

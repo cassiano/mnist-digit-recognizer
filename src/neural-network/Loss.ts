@@ -15,9 +15,12 @@
  * The prediction is clipped to [epsilon, 1-epsilon] to avoid log(0) = -Infinity
  * which would occur if the network predicts probability 0 for the correct class.
  */
+import { EPSILON } from '../constants'
+
 export function crossEntropy(predicted: number[], actual: number): number {
-  const epsilon = 1e-15
+  const epsilon = EPSILON
   const clipped = Math.max(epsilon, Math.min(1 - epsilon, predicted[actual]))
+
   return -Math.log(clipped)
 }
 
@@ -30,9 +33,10 @@ export function crossEntropyBatch(
   actuals: number[],
 ): number {
   let totalLoss = 0
-  for (let i = 0; i < predictions.length; i++) {
+
+  for (let i = 0; i < predictions.length; i++)
     totalLoss += crossEntropy(predictions[i], actuals[i])
-  }
+
   return totalLoss / predictions.length
 }
 

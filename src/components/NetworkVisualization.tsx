@@ -14,6 +14,19 @@
  */
 import { useMemo } from 'react'
 import type { Network } from '../neural-network/Network'
+import {
+  INPUT_SIZE,
+  SVG_WIDTH,
+  SVG_HEIGHT,
+  MAX_DISPLAY_NEURONS,
+  SVG_PADDING_Y,
+  LAYER_HEIGHT_OFFSET,
+  MIN_LAYER_HEIGHT,
+  NEURON_SPACING,
+  NEURON_RADIUS_LARGE,
+  NEURON_RADIUS_SMALL,
+  NEURON_ACTIVE_THRESHOLD,
+} from '../constants'
 
 interface NetworkVisualizationProps {
   network: Network
@@ -24,26 +37,24 @@ export function NetworkVisualization({
   network,
   trainingTick,
 }: NetworkVisualizationProps) {
-  const svgWidth = 1100
-  const svgHeight = 480
-  const maxDisplayNeurons = 8
-  const paddingY = 50
+  const svgWidth = SVG_WIDTH
+  const svgHeight = SVG_HEIGHT
 
   const getLayerHeight = (size: number) => {
-    const maxH = svgHeight - paddingY * 2 - 30
+    const maxH = svgHeight - SVG_PADDING_Y * 2 - LAYER_HEIGHT_OFFSET
 
-    if (size <= maxDisplayNeurons) return Math.max(60, size * 28)
+    if (size <= MAX_DISPLAY_NEURONS) return Math.max(MIN_LAYER_HEIGHT, size * NEURON_SPACING)
 
     return maxH
   }
 
   const getLayerDisplay = (size: number, isInputLayer: boolean) => {
-    if (!isInputLayer || size <= maxDisplayNeurons)
+    if (!isInputLayer || size <= MAX_DISPLAY_NEURONS)
       return {
         neurons: Array.from({ length: size }, (_, i) => i),
         hasEllipsis: false,
       }
-    const half = Math.floor(maxDisplayNeurons / 2)
+    const half = Math.floor(MAX_DISPLAY_NEURONS / 2)
 
     return {
       neurons: [
@@ -65,7 +76,7 @@ export function NetworkVisualization({
   }
 
   const layerData = useMemo(() => {
-    const layerSizes = [784, ...network.layers.map(l => l.outputSize)]
+    const layerSizes = [INPUT_SIZE, ...network.layers.map(l => l.outputSize)]
     const layerLabels = [
       'Input',
       ...network.layers.map((_l, i) =>
@@ -241,13 +252,13 @@ export function NetworkVisualization({
 
               {/* Neuron circles with activation-based coloring */}
               {layer.neurons.map((neuron, i) => {
-                const isActive = neuron.activation > 0.1
+                const isActive = neuron.activation > NEURON_ACTIVE_THRESHOLD
                 const intensity = Math.min(1, neuron.activation)
                 const baseColor =
                   l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'
                 const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, var(--svg-bg))`
                 const strokeColor = isActive ? baseColor : 'var(--svg-inactive-stroke)'
-                const r = layer.size <= 12 ? 14 : 10
+                const r = layer.size <= 12 ? NEURON_RADIUS_LARGE : NEURON_RADIUS_SMALL
                 const isOutputLayer = l === layerData.length - 1
 
                 return (

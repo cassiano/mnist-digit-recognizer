@@ -9,6 +9,7 @@
  * to produce bold strokes that downsample well to 28×28.
  */
 import { useRef, useState, useEffect } from 'react'
+import { CANVAS_SIZE, CANVAS_DOT_RADIUS, CANVAS_LINE_WIDTH } from '../constants'
 
 interface DrawingCanvasProps {
   onRecognize: (imageData: ImageData) => void
@@ -58,7 +59,7 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
       const ctx = canvasRef.current?.getContext('2d')
       if (ctx) {
         ctx.beginPath()
-        ctx.arc(point.x, point.y, 18, 0, Math.PI * 2)
+        ctx.arc(point.x, point.y, CANVAS_DOT_RADIUS, 0, Math.PI * 2)
         ctx.fillStyle = '#fff'
         ctx.fill()
       }
@@ -76,7 +77,7 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
         ctx.moveTo(lastPoint.current.x, lastPoint.current.y)
         ctx.lineTo(point.x, point.y)
         ctx.strokeStyle = '#fff'
-        ctx.lineWidth = 28
+        ctx.lineWidth = CANVAS_LINE_WIDTH
         ctx.lineCap = 'round'
         ctx.lineJoin = 'round'
         ctx.stroke()
@@ -118,8 +119,8 @@ export function DrawingCanvas({ onRecognize, disabled = false }: DrawingCanvasPr
       <h3>Draw a Digit</h3>
       <canvas
         ref={canvasRef}
-        width={280}
-        height={280}
+        width={CANVAS_SIZE}
+        height={CANVAS_SIZE}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
