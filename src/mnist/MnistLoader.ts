@@ -79,7 +79,7 @@ export class MnistLoader {
    * Downloads and parses MNIST image data from a gzipped IDX binary file.
    *
    * File format (after decompression):
-   *   Bytes 0-3:   Magic number (2051 for images)
+   *   Bytes 0-3:   Magic number (MNIST_IMAGE_MAGIC = 2051 for images)
    *   Bytes 4-7:   Number of images
    *   Bytes 8-11:  Number of rows per image (MNIST_IMAGE_DIMENSIONS.rows = 28)
    *   Bytes 12-15: Number of columns per image (MNIST_IMAGE_DIMENSIONS.cols = 28)
@@ -124,7 +124,7 @@ export class MnistLoader {
    * Downloads and parses MNIST label data from a gzipped IDX binary file.
    *
    * File format (after decompression):
-   *   Bytes 0-3: Magic number (2049 for labels)
+   *   Bytes 0-3: Magic number (MNIST_LABEL_MAGIC = 2049 for labels)
    *   Bytes 4-7: Number of labels
    *   Bytes 8+:  Label values (0-9), one byte per label
    */
@@ -246,7 +246,8 @@ export class MnistLoader {
     }
 
     // No digit drawn — return blank
-    if (minX > maxX) return new Array(MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS).fill(0)
+    if (minX > maxX)
+      return new Array(MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS).fill(0)
 
     // Step 3: Compute center of mass of non-zero pixels
     let sumX = 0,
@@ -282,7 +283,12 @@ export class MnistLoader {
         const newY = y + dy
         const newX = x + dx
 
-        if (newY >= 0 && newY < MNIST_IMAGE_ROWS && newX >= 0 && newX < MNIST_IMAGE_COLS)
+        if (
+          newY >= 0 &&
+          newY < MNIST_IMAGE_ROWS &&
+          newX >= 0 &&
+          newX < MNIST_IMAGE_COLS
+        )
           centered[newY][newX] = grid[y][x]
       }
     }
@@ -291,7 +297,8 @@ export class MnistLoader {
     const inputs: number[] = []
 
     for (let y = 0; y < MNIST_IMAGE_ROWS; y++)
-      for (let x = 0; x < MNIST_IMAGE_COLS; x++) inputs.push(centered[y][x] / MNIST_PIXEL_MAX)
+      for (let x = 0; x < MNIST_IMAGE_COLS; x++)
+        inputs.push(centered[y][x] / MNIST_PIXEL_MAX)
 
     return inputs
   }

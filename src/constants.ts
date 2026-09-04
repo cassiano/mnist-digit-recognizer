@@ -1,5 +1,12 @@
+// MNIST Dataset
+export const MNIST_IMAGE_ROWS = 28
+export const MNIST_IMAGE_COLS = 28
+export const MNIST_IMAGE_MAGIC = 2051
+export const MNIST_LABEL_MAGIC = 2049
+export const MNIST_PIXEL_MAX = 255
+
 // Neural Network Architecture
-export const INPUT_SIZE = 784 // 28x28 pixels
+export const INPUT_SIZE = MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS // 28x28 = 784 pixels
 export const OUTPUT_SIZE = 10 // digits 0-9
 export const DEFAULT_HIDDEN_LAYER_SIZE = 16
 export const MIN_LAYER_SIZE = 1
@@ -14,13 +21,6 @@ export const LEARNING_RATE_DECAY = 0.999
 
 // Numerical Stability
 export const EPSILON = 1e-15
-
-// MNIST Dataset
-export const MNIST_IMAGE_ROWS = 28
-export const MNIST_IMAGE_COLS = 28
-export const MNIST_IMAGE_MAGIC = 2051
-export const MNIST_LABEL_MAGIC = 2049
-export const MNIST_PIXEL_MAX = 255
 
 // Drawing Canvas
 export const CANVAS_SIZE = 280
