@@ -245,8 +245,8 @@ export function NetworkVisualization({
                 const intensity = Math.min(1, neuron.activation)
                 const baseColor =
                   l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'
-                const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, #f5f5f5)`
-                const strokeColor = isActive ? baseColor : '#999'
+                const fillColor = `color-mix(in srgb, ${baseColor} ${Math.round(30 + intensity * 70)}%, var(--svg-bg))`
+                const strokeColor = isActive ? baseColor : 'var(--svg-inactive-stroke)'
                 const r = layer.size <= 12 ? 14 : 10
                 const isOutputLayer = l === layerData.length - 1
 
@@ -266,7 +266,7 @@ export function NetworkVisualization({
                       <text
                         x={neuron.x + r + 6}
                         y={neuron.y + 4}
-                        fill="#333"
+                        style={{ fill: 'var(--svg-text)' }}
                         fontSize="11"
                         fontFamily="var(--mono)"
                         fontWeight="600"
@@ -284,7 +284,7 @@ export function NetworkVisualization({
                   x={layer.x}
                   y={svgHeight / 2}
                   textAnchor="middle"
-                  fill="#666"
+                  style={{ fill: 'var(--svg-text-secondary)' }}
                   fontSize="18"
                   fontWeight="bold"
                   fontFamily="var(--mono)"
@@ -298,7 +298,7 @@ export function NetworkVisualization({
                 x={layer.x}
                 y={(svgHeight - layer.h) / 2 - 20}
                 textAnchor="middle"
-                fill="#666"
+                style={{ fill: 'var(--svg-text-secondary)' }}
                 fontSize="13"
                 fontFamily="var(--mono)"
                 fontWeight="600"
@@ -311,7 +311,7 @@ export function NetworkVisualization({
                 x={layer.x}
                 y={svgHeight - 8}
                 textAnchor="middle"
-                fill="#333"
+                style={{ fill: 'var(--svg-text)' }}
                 fontSize="13"
                 fontFamily="var(--sans)"
               >

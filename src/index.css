@@ -9,9 +9,30 @@
   --success: #2e7d32;
   --code-bg: #f0f0f0;
   --shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px;
+  --svg-text: #333;
+  --svg-text-secondary: #666;
+  --svg-inactive-stroke: #999;
+  --svg-bg: #f5f5f5;
 
   --sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: 'SF Mono', 'Fira Code', monospace;
+}
+
+[data-theme="dark"] {
+  --text: #d0d0d0;
+  --text-h: #f0f0f0;
+  --bg: #1a1a1a;
+  --surface: #252525;
+  --border: #3a3a3a;
+  --accent: #ef5350;
+  --accent-hover: #f44336;
+  --success: #66bb6a;
+  --code-bg: #2a2a2a;
+  --shadow: rgba(0, 0, 0, 0.4) 0 4px 6px -1px;
+  --svg-text: #d0d0d0;
+  --svg-text-secondary: #999;
+  --svg-inactive-stroke: #666;
+  --svg-bg: #1a1a1a;
 }
 
 * {
@@ -40,6 +61,7 @@ body {
 header {
   text-align: center;
   margin-bottom: 30px;
+  position: relative;
 }
 
 header h1 {
@@ -53,6 +75,32 @@ header p {
   color: var(--text);
   font-size: 1rem;
   opacity: 0.8;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+.theme-toggle .icon {
+  font-size: 1.1rem;
 }
 
 main {

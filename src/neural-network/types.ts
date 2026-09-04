@@ -6,7 +6,7 @@
  */
 
 /** Supported activation function types */
-export type ActivationType = 'relu' | 'sigmoid' | 'softmax' | 'none';
+export type ActivationType = 'relu' | 'sigmoid' | 'softmax' | 'none'
 
 /**
  * Configuration for creating a new neural network.
@@ -15,9 +15,9 @@ export type ActivationType = 'relu' | 'sigmoid' | 'softmax' | 'none';
  * @property activation - Activation function for hidden layers (default: 'relu')
  */
 export interface NetworkConfig {
-  layers: number[];
-  learningRate: number;
-  activation?: ActivationType;
+  layers: number[]
+  learningRate: number
+  activation?: ActivationType
 }
 
 /**
@@ -26,8 +26,8 @@ export interface NetworkConfig {
  * @property labels - 1D array of digit labels (0-9)
  */
 export interface TrainingData {
-  inputs: number[][];
-  labels: number[];
+  inputs: number[][]
+  labels: number[]
 }
 
 /**
@@ -37,9 +37,9 @@ export interface TrainingData {
  * @property accuracy - Fraction of correct predictions on test data
  */
 export interface TrainingResult {
-  epoch: number;
-  loss: number;
-  accuracy: number;
+  epoch: number
+  loss: number
+  accuracy: number
 }
 
 /**
@@ -49,7 +49,7 @@ export interface TrainingResult {
  * @property probabilities - Full probability distribution over all 10 digits
  */
 export interface Prediction {
-  digit: number;
-  confidence: number;
-  probabilities: number[];
+  digit: number
+  confidence: number
+  probabilities: number[]
 }

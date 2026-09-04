@@ -18,6 +18,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Network } from '../neural-network/Network'
 import { MnistLoader } from '../mnist/MnistLoader'
 import type { TrainingResult } from '../neural-network/types'
+import { timesMap } from '../utils'
 
 /** localStorage key for persisting the trained model */
 const STORAGE_KEY = 'mnist-nn-model-v2'
@@ -32,7 +33,13 @@ interface TrainingPanelProps {
   initialResults?: TrainingResult[]
 }
 
-export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick, initialResults }: TrainingPanelProps) {
+export function TrainingPanel({
+  network,
+  onTrained,
+  onModelSaved,
+  onTrainingTick,
+  initialResults,
+}: TrainingPanelProps) {
   const [status, setStatus] = useState('Ready to train')
   const [epochs, setEpochs] = useState(5)
   const [learningRate, setLearningRate] = useState(0.01)
@@ -77,11 +84,20 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
    * Updates progress bar and labels via direct DOM manipulation.
    * This bypasses React state to avoid re-render overhead during training.
    */
-  const updateDOM = (pct: number, epoch: number, totalEpochs: number, processed: number, total: number) => {
+  const updateDOM = (
+    pct: number,
+    epoch: number,
+    totalEpochs: number,
+    processed: number,
+    total: number,
+  ) => {
     if (progressFillRef.current) progressFillRef.current.style.width = `${pct}%`
-    if (percentLabelRef.current) percentLabelRef.current.textContent = `${Math.round(pct)}%`
-    if (epochLabelRef.current) epochLabelRef.current.textContent = `Epoch ${epoch} / ${totalEpochs}`
-    if (samplesLabelRef.current) samplesLabelRef.current.textContent = `${processed.toLocaleString()} / ${total.toLocaleString()} samples`
+    if (percentLabelRef.current)
+      percentLabelRef.current.textContent = `${Math.round(pct)}%`
+    if (epochLabelRef.current)
+      epochLabelRef.current.textContent = `Epoch ${epoch} / ${totalEpochs}`
+    if (samplesLabelRef.current)
+      samplesLabelRef.current.textContent = `${processed.toLocaleString()} / ${total.toLocaleString()} samples`
   }
 
   /** Saves the current network weights/biases and training results to localStorage */
@@ -106,17 +122,22 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
     if (isTraining || !mnistRef.current) return
 
     const net = networkRef.current
+
     setIsTraining(true)
     setResults([])
+
     abortRef.current = false
 
     // Start elapsed time counter
     let elapsed = 0
+
     timerRef.current = setInterval(() => {
       elapsed++
+
       if (timeLabelRef.current) {
         const mins = Math.floor(elapsed / 60)
         const secs = elapsed % 60
+
         timeLabelRef.current.textContent = `${mins}:${secs.toString().padStart(2, '0')}`
       }
     }, 1000)
@@ -124,12 +145,15 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
     try {
       // Load MNIST dataset (downloads and decompresses gzipped binary files)
       setStatus('Loading MNIST dataset...')
-      await mnistRef.current.load(msg => setStatus(msg))
+
+      await mnistRef.current.load(setStatus)
 
       if (abortRef.current) {
         setStatus('Training aborted')
         setIsTraining(false)
+
         if (timerRef.current) clearInterval(timerRef.current)
+
         return
       }
 
@@ -138,7 +162,9 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
       const total = epochs * trainingData.inputs.length
 
       setStatus('Training network...')
+
       await new Promise(r => setTimeout(r, 0)) // yield to render loading message
+
       updateDOM(0, 0, epochs, 0, total)
 
       const epochResults: TrainingResult[] = []
@@ -153,6 +179,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         const indices = timesMap(trainingData.inputs.length, i => i)
         for (let k = indices.length - 1; k > 0; k--) {
           const j = Math.floor(Math.random() * (k + 1))
+
           ;[indices[k], indices[j]] = [indices[j], indices[k]]
         }
 
@@ -163,35 +190,56 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
               resolve(true)
               return
             }
+
             const batchSize = document.hidden ? 2000 : 100
             const end = Math.min(i + batchSize, indices.length)
+
             while (i < end) {
               if (abortRef.current) {
                 resolve(true)
                 return
               }
+
               const idx = indices[i]
               const output = net.forward(trainingData.inputs[idx])
               const predicted = output.indexOf(Math.max(...output))
+
               if (predicted === trainingData.labels[idx]) correct++
+
               net.backward(trainingData.labels[idx], currentLR)
               i++
             }
             if (!document.hidden) {
               const processed = epoch * indices.length + i
-              updateDOM((processed / total) * 100, epoch + 1, epochs, processed, total)
+
+              updateDOM(
+                (processed / total) * 100,
+                epoch + 1,
+                epochs,
+                processed,
+                total,
+              )
+
               onTrainingTickRef.current?.()
             }
             if (i < indices.length) {
               setTimeout(chunk, 0)
             } else {
               if (document.hidden) {
-                updateDOM(((epoch + 1) / epochs) * 100, epoch + 1, epochs, (epoch + 1) * indices.length, total)
+                updateDOM(
+                  ((epoch + 1) / epochs) * 100,
+                  epoch + 1,
+                  epochs,
+                  (epoch + 1) * indices.length,
+                  total,
+                )
                 onTrainingTickRef.current?.()
               }
+
               resolve(false)
             }
           }
+
           setTimeout(chunk, 0)
         })
 
@@ -199,9 +247,11 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
 
         // Evaluate on test set after each epoch
         let testCorrect = 0
+
         for (let ti = 0; ti < testData.inputs.length; ti++) {
           const output = net.forward(testData.inputs[ti])
           const predicted = output.indexOf(Math.max(...output))
+
           if (predicted === testData.labels[ti]) testCorrect++
         }
 
@@ -211,6 +261,7 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
           loss: 0,
           accuracy: testAccuracy,
         }
+
         epochResults.push(result)
         setResults([...epochResults])
       }
@@ -225,9 +276,12 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         onTrainedRef.current()
       }
     } catch (error) {
-      setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      setStatus(
+        `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     } finally {
       setIsTraining(false)
+
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
@@ -297,11 +351,19 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         {isTraining && (
           <div className="progress-section">
             <div className="progress-header">
-              <span className="epoch-label" ref={epochLabelRef}>Epoch 0 / {epochs}</span>
-              <span className="percent-label" ref={percentLabelRef}>0%</span>
+              <span className="epoch-label" ref={epochLabelRef}>
+                Epoch 0 / {epochs}
+              </span>
+              <span className="percent-label" ref={percentLabelRef}>
+                0%
+              </span>
             </div>
             <div className="progress-bar">
-              <div className="progress-fill" ref={progressFillRef} style={{ width: '0%' }} />
+              <div
+                className="progress-fill"
+                ref={progressFillRef}
+                style={{ width: '0%' }}
+              />
             </div>
             <div className="progress-details">
               <span ref={samplesLabelRef}>0 / 0 samples</span>
@@ -312,7 +374,8 @@ export function TrainingPanel({ network, onTrained, onModelSaved, onTrainingTick
         {!isTraining && <p>{status}</p>}
         {results.length > 0 && results[results.length - 1].accuracy > 0 && (
           <p className="accuracy">
-            Test Accuracy: {(results[results.length - 1].accuracy * 100).toFixed(2)}%
+            Test Accuracy:{' '}
+            {(results[results.length - 1].accuracy * 100).toFixed(2)}%
           </p>
         )}
       </div>

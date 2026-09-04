@@ -24,6 +24,7 @@ import { TrainingPanel } from './components/TrainingPanel'
 import { NetworkInfo } from './components/NetworkInfo'
 import { NetworkVisualization } from './components/NetworkVisualization'
 import { PredictionResult } from './components/PredictionResult'
+import { ThemeToggle } from './components/ThemeToggle'
 import type { Prediction } from './neural-network/types'
 
 /** localStorage key for persisting the trained model */
@@ -144,6 +145,16 @@ function App() {
     networkRef.current = network
   })
 
+  /** Apply saved theme on mount */
+  useEffect(() => {
+    const saved = localStorage.getItem('mnist-nn-theme')
+    if (saved === 'dark' || saved === 'light') {
+      document.documentElement.setAttribute('data-theme', saved)
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark')
+    }
+  }, [])
+
   const layerDescription = `784 → ${hiddenLayerSizes.join(' → ')} → 10`
 
   /** Called by TrainingPanel after training completes */
@@ -243,6 +254,7 @@ function App() {
       <header>
         <h1>MNIST Digit Recognizer</h1>
         <p>Neural Network with {layerDescription} architecture</p>
+        <ThemeToggle />
       </header>
 
       <main>
