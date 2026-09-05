@@ -14,6 +14,7 @@
  */
 import { useMemo } from 'react'
 import type { Network } from '../neural-network/Network'
+import { timesMap } from '../utils'
 import {
   INPUT_SIZE,
   SVG_WIDTH,
@@ -51,15 +52,15 @@ export function NetworkVisualization({
   const getLayerDisplay = (size: number, isInputLayer: boolean) => {
     if (!isInputLayer || size <= MAX_DISPLAY_NEURONS)
       return {
-        neurons: Array.from({ length: size }, (_, i) => i),
+        neurons: timesMap(size, i => i),
         hasEllipsis: false,
       }
     const half = Math.floor(MAX_DISPLAY_NEURONS / 2)
 
     return {
       neurons: [
-        ...Array.from({ length: half }, (_, i) => i),
-        ...Array.from({ length: half }, (_, i) => size - half + i),
+        ...timesMap(half, i => i),
+        ...timesMap(half, i => size - half + i),
       ],
       hasEllipsis: true,
     }

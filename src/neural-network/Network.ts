@@ -1,4 +1,5 @@
 import { Layer } from './Layer'
+import { timesMap } from '../utils'
 import {
   DEFAULT_LEARNING_RATE,
   EPSILON,
@@ -137,7 +138,7 @@ export class Network {
       let correct = 0
 
       // Fisher-Yates shuffle for random sampling
-      const indices = Array.from({ length: inputs.length }, (_, i) => i)
+      const indices = timesMap(inputs.length, i => i)
       this.shuffle(indices)
 
       for (let i = 0; i < indices.length; i++) {

@@ -1,5 +1,5 @@
 import type { TrainingData } from '../neural-network/types'
-import { map } from '../utils'
+import { map, timesMap } from '../utils'
 import {
   MNIST_IMAGE_ROWS,
   MNIST_IMAGE_COLS,
@@ -218,7 +218,7 @@ export class MnistLoader {
     const stepY = height / MNIST_IMAGE_ROWS
 
     // Step 1: Downsample to 28×28
-    const grid: number[][] = Array.from({ length: MNIST_IMAGE_ROWS }, () =>
+    const grid: number[][] = timesMap(MNIST_IMAGE_ROWS, () =>
       new Array(MNIST_IMAGE_COLS).fill(0),
     )
 
@@ -278,7 +278,7 @@ export class MnistLoader {
     const dy = Math.round(centerY - comY)
 
     // Step 4: Translate to center the digit
-    const centered: number[][] = Array.from({ length: MNIST_IMAGE_ROWS }, () =>
+    const centered: number[][] = timesMap(MNIST_IMAGE_ROWS, () =>
       new Array(MNIST_IMAGE_COLS).fill(0),
     )
 
