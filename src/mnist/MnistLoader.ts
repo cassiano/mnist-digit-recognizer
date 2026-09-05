@@ -79,7 +79,7 @@ export class MnistLoader {
    * Downloads and parses MNIST image data from a gzipped IDX binary file.
    *
    * File format (after decompression):
-   *   Bytes 0-3:   Magic number (MNIST_IMAGE_MAGIC = 2051 for images)
+   *   Bytes 0-3:   Magic number (MNIST_IMAGE_MAGIC = 0x00000803 = 2051 for images)
    *   Bytes 4-7:   Number of images
    *   Bytes 8-11:  Number of rows per image (MNIST_IMAGE_DIMENSIONS.rows = 28)
    *   Bytes 12-15: Number of columns per image (MNIST_IMAGE_DIMENSIONS.cols = 28)
@@ -124,7 +124,7 @@ export class MnistLoader {
    * Downloads and parses MNIST label data from a gzipped IDX binary file.
    *
    * File format (after decompression):
-   *   Bytes 0-3: Magic number (MNIST_LABEL_MAGIC = 2049 for labels)
+   *   Bytes 0-3: Magic number (MNIST_LABEL_MAGIC = 0x00000801 = 2049 for labels)
    *   Bytes 4-7: Number of labels
    *   Bytes 8+:  Label values (0-9), one byte per label
    */
