@@ -1,6 +1,7 @@
 import { Neuron } from './Neuron'
 import { relu, reluDeriv, sigmoid, sigmoidDeriv, softmax } from './Activation'
 import type { ActivationType } from './types'
+import { timesMap } from '../utils'
 
 /**
  * A single layer in the neural network.
@@ -38,10 +39,7 @@ export class Layer {
     this.inputSize = inputSize
     this.outputSize = outputSize
     this.activation = activation
-    this.neurons = []
-
-    for (let i = 0; i < outputSize; i++)
-      this.neurons.push(new Neuron(inputSize))
+    this.neurons = timesMap(outputSize, () => new Neuron(inputSize))
   }
 
   /**
@@ -75,6 +73,7 @@ export class Layer {
         this.activation === 'sigmoid' ? sigmoid : relu,
       )
     }
+
     return this.outputs
   }
 
