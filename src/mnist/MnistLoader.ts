@@ -222,22 +222,34 @@ export class MnistLoader {
       new Array(MNIST_IMAGE_COLS).fill(0),
     )
 
-    // Sample each 28×28 cell from the canvas using nearest-neighbor:
-    // map grid coordinates back to source pixels and read the average RBG value.
+    // Average every pixel within each 10×10 cell so thin strokes
+    // that fall between sample points are never missed.
     timesForEachN([MNIST_IMAGE_ROWS, MNIST_IMAGE_COLS], (y, x) => {
-      const srcX = Math.floor(x * stepX)
-      const srcY = Math.floor(y * stepY)
-      const idx = (srcY * width + srcX) * 4
-      const [r, g, b] = data.slice(idx, idx + 3) // ignore alpha channel
+      const x0 = Math.floor(x * stepX)
+      const y0 = Math.floor(y * stepY)
+      const x1 = Math.floor((x + 1) * stepX)
+      const y1 = Math.floor((y + 1) * stepY)
 
-      grid[y][x] = Math.trunc((r + g + b) / 3)
+      let sum = 0
+      let count = 0
+
+      for (let sy = y0; sy < y1; sy++) {
+        for (let sx = x0; sx < x1; sx++) {
+          const idx = (sy * width + sx) * 4
+
+          sum += data[idx] // red channel (grayscale, so r ≈ g ≈ b)
+          count++
+        }
+      }
+
+      grid[y][x] = Math.trunc(sum / count)
     })
 
     // Step 2: Find bounding box of the digit
     let minX = MNIST_IMAGE_COLS,
-      maxX = 0,
+      maxX = -1,
       minY = MNIST_IMAGE_ROWS,
-      maxY = 0
+      maxY = -1
 
     timesForEachN([MNIST_IMAGE_ROWS, MNIST_IMAGE_COLS], (y, x) => {
       if (grid[y][x] > 0) {
@@ -252,7 +264,10 @@ export class MnistLoader {
     if (minX > maxX)
       return new Array(MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS).fill(0)
 
-    // Step 3: Compute center of mass of non-zero pixels
+    // Step 3: Compute the intensity-weighted center of mass of the digit.
+    // Each pixel's position is weighted by its brightness, so brighter
+    // pixels pull the center more. The offset (dx, dy) is the integer
+    // translation needed to move this center to the grid center (14, 14).
     let sumX = 0,
       sumY = 0,
       totalWeight = 0
