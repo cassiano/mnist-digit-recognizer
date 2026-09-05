@@ -201,11 +201,15 @@ export class MnistLoader {
   /**
    * Preprocesses canvas ImageData to match MNIST format.
    *
-   * 1. Downsamples the canvas to 28×28 by direct pixel sampling
-   * 2. Centers the digit based on center of mass of non-zero pixels
-   * 3. Normalizes pixel values from [0, 255] to [0, 1]
+   * 1. Downsamples the canvas to 28×28 by nearest-neighbor pixel sampling
+   * 2. Computes the center of mass of the drawn digit (intensity-weighted)
+   * 3. Translates the digit so its center of mass aligns with the grid center
+   * 4. Normalizes pixel values from [0, 255] to [0, 1]
    *
-   * Returns a flat array of 784 values (28×28), ready for network input.
+   * Centering ensures the network receives consistently positioned digits
+   * regardless of where they are drawn on the canvas.
+   *
+   * @returns A flat array of 784 values (28×28), ready for network input.
    * The canvas draws white digits on black background, matching MNIST's format.
    */
   preprocessCanvasData(imageData: ImageData): number[] {
