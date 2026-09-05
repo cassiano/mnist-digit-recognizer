@@ -298,13 +298,15 @@ export class MnistLoader {
     }
 
     // Step 5: Flatten and normalize
-    const inputs: number[] = []
+    const image: number[] = []
 
     for (let y = 0; y < MNIST_IMAGE_ROWS; y++)
       for (let x = 0; x < MNIST_IMAGE_COLS; x++)
-        inputs.push(centered[y][x] / MNIST_PIXEL_MAX)
+        image.push(centered[y][x] / MNIST_PIXEL_MAX)
 
-    return inputs
+    // console.log(MnistLoader.imageToText(image))
+
+    return image
   }
 
   /**
