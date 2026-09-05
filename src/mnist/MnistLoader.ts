@@ -323,12 +323,14 @@ export class MnistLoader {
    * @throws If data has not been loaded (call `load()` first) or index is out of bounds
    */
   imageAsText(type: 'trainData' | 'testData', index: number): string {
-    const dataset = this[type]
-    if (!dataset) throw new Error('Data not loaded. Call load() first.')
+    return MnistLoader.imageToText(
+      type === 'trainData'
+        ? this.getTrainingData().inputs[index]
+        : this.getTestData().inputs[index],
+    )
+  }
 
-    const image = dataset.inputs[index]
-    if (!image) throw new Error(`Image index out of bounds: ${index}`)
-
+  static imageToText(image: number[]): string {
     const gradient = ' ░▒▓▉█'
 
     let text = ''
