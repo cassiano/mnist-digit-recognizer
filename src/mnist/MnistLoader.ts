@@ -1,5 +1,5 @@
 import type { TrainingData } from '../neural-network/types'
-import { map, timesMap } from '../utils'
+import { map, timesForEachN, timesMap } from '../utils'
 import {
   MNIST_IMAGE_ROWS,
   MNIST_IMAGE_COLS,
@@ -222,15 +222,16 @@ export class MnistLoader {
       new Array(MNIST_IMAGE_COLS).fill(0),
     )
 
-    for (let y = 0; y < MNIST_IMAGE_ROWS; y++) {
-      for (let x = 0; x < MNIST_IMAGE_COLS; x++) {
-        const srcX = Math.floor(x * stepX)
-        const srcY = Math.floor(y * stepY)
-        const idx = (srcY * width + srcX) * 4
+    // Sample each 28×28 cell from the canvas using nearest-neighbor:
+    // map grid coordinates back to source pixels and read the average RBG value.
+    timesForEachN([MNIST_IMAGE_ROWS, MNIST_IMAGE_COLS], (y, x) => {
+      const srcX = Math.floor(x * stepX)
+      const srcY = Math.floor(y * stepY)
+      const idx = (srcY * width + srcX) * 4
+      const [r, g, b] = data.slice(idx, idx + 3) // ignore alpha channel
 
-        grid[y][x] = data[idx]
-      }
-    }
+      grid[y][x] = Math.trunc((r + g + b) / 3)
+    })
 
     // Step 2: Find bounding box of the digit
     let minX = MNIST_IMAGE_COLS,
@@ -238,18 +239,16 @@ export class MnistLoader {
       minY = MNIST_IMAGE_ROWS,
       maxY = 0
 
-    for (let y = 0; y < MNIST_IMAGE_ROWS; y++) {
-      for (let x = 0; x < MNIST_IMAGE_COLS; x++) {
-        if (grid[y][x] > 0) {
-          if (x < minX) minX = x
-          if (x > maxX) maxX = x
-          if (y < minY) minY = y
-          if (y > maxY) maxY = y
-        }
+    timesForEachN([MNIST_IMAGE_ROWS, MNIST_IMAGE_COLS], (y, x) => {
+      if (grid[y][x] > 0) {
+        if (x < minX) minX = x
+        if (x > maxX) maxX = x
+        if (y < minY) minY = y
+        if (y > maxY) maxY = y
       }
-    }
+    })
 
-    // No digit drawn — return blank
+    // If no digit is drawn, return blank.
     if (minX > maxX)
       return new Array(MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS).fill(0)
 
@@ -300,22 +299,18 @@ export class MnistLoader {
     // Step 5: Flatten and normalize
     const image: number[] = []
 
-    for (let y = 0; y < MNIST_IMAGE_ROWS; y++)
-      for (let x = 0; x < MNIST_IMAGE_COLS; x++)
-        image.push(centered[y][x] / MNIST_PIXEL_MAX)
+    timesForEachN([MNIST_IMAGE_ROWS, MNIST_IMAGE_COLS], (y, x) => {
+      image.push(centered[y][x] / MNIST_PIXEL_MAX)
+    })
 
-    // console.log(MnistLoader.imageToText(image))
+    console.log(MnistLoader.imageToText(image))
 
     return image
   }
 
   /**
-   * Renders an MNIST image as a text-based visualization using Unicode block characters.
-   *
-   * Maps each pixel value (0-1) to a character from a gradient string,
-   * where darker pixels (closer to 0) map to lighter characters and
-   * brighter pixels (closer to 1) map to denser block characters.
-   * Each character is repeated twice to maintain approximate square aspect ratio.
+   * Convenience wrapper over {@link MnistLoader.imageToText} that retrieves
+   * the image from the loaded dataset by type and index.
    *
    * @param type - 'trainData' for training images, 'testData' for test images
    * @param index - Index of the image within the selected dataset (0-based)
@@ -330,25 +325,35 @@ export class MnistLoader {
     )
   }
 
+  /**
+   * Renders a 28×28 image (flattened to 784 values in [0, 1]) as text
+   * using Unicode block characters for visual density.
+   *
+   * Each pixel is mapped to a character from the gradient ` ░▒▓▉█`,
+   * where 0 (black) maps to a space and 1 (white) maps to `█`.
+   * Characters are doubled horizontally to approximate square pixels
+   * in monospace fonts.
+   *
+   * @param image - Flattened 28×28 image as an array of 784 values in [0, 1]
+   * @returns A string with 28 newline-separated rows, each 56 characters wide
+   */
   static imageToText(image: number[]): string {
     const gradient = ' ░▒▓▉█'
 
     let text = ''
 
-    for (let row = 0; row < MNIST_IMAGE_ROWS; row++) {
-      for (let col = 0; col < MNIST_IMAGE_COLS; col++) {
-        const pixelIndex = row * MNIST_IMAGE_COLS + col
-        const value = image[pixelIndex]
-        const charIndex = Math.trunc(
-          map(value, 0, 1, 0, gradient.length - 1, true),
-        )
-        const unicodeChar = gradient[charIndex]
+    timesForEachN([MNIST_IMAGE_ROWS, MNIST_IMAGE_COLS], (row, col) => {
+      const pixelIndex = row * MNIST_IMAGE_COLS + col
+      const value = image[pixelIndex]
+      const charIndex = Math.trunc(
+        map(value, 0, 1, 0, gradient.length - 1, true),
+      )
+      const unicodeChar = gradient[charIndex]
 
-        text += unicodeChar.repeat(2)
-      }
+      text += unicodeChar.repeat(2)
 
-      text += '\n'
-    }
+      if (col === MNIST_IMAGE_COLS - 1) text += '\n'
+    })
 
     return text
   }
