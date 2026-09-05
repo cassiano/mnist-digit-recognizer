@@ -10,20 +10,20 @@ import {
 
 // Files in Big Endian IDX format, gzipped.
 const MNIST_URLS = {
-  trainImages: 'mnist/train-images-idx3-ubyte',
-  trainLabels: 'mnist/train-labels-idx1-ubyte',
-  testImages: 'mnist/t10k-images-idx3-ubyte',
-  testLabels: 'mnist/t10k-labels-idx1-ubyte',
+  trainImages: 'mnist/train-images-idx3-ubyte.zip',
+  trainLabels: 'mnist/train-labels-idx1-ubyte.zip',
+  testImages: 'mnist/t10k-images-idx3-ubyte.zip',
+  testLabels: 'mnist/t10k-labels-idx1-ubyte.zip',
 }
 // const MNIST_URLS = {
 //   trainImages:
-//     'http://localhost:5173/mnist-digit-recognizer/mnist/train-images-idx3-ubyte',
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/train-images-idx3-ubyte.zip',
 //   trainLabels:
-//     'http://localhost:5173/mnist-digit-recognizer/mnist/train-labels-idx1-ubyte',
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/train-labels-idx1-ubyte.zip',
 //   testImages:
-//     'http://localhost:5173/mnist-digit-recognizer/mnist/t10k-images-idx3-ubyte',
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/t10k-images-idx3-ubyte.zip',
 //   testLabels:
-//     'http://localhost:5173/mnist-digit-recognizer/mnist/t10k-labels-idx1-ubyte',
+//     'http://localhost:5173/mnist-digit-recognizer/mnist/t10k-labels-idx1-ubyte.zip',
 // }
 
 export class MnistLoader {
