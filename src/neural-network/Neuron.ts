@@ -15,9 +15,9 @@ export class Neuron {
   /** Bias term — added to the weighted sum before activation */
   bias: number
 
-  constructor(inputCount: number) {
+  constructor(inputSize: number) {
     this.bias = 0
-    this.weights = Neuron.heInit(inputCount)
+    this.weights = Neuron.heInit(inputSize)
   }
 
   /**
