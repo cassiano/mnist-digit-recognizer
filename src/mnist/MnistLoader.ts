@@ -265,9 +265,14 @@ export class MnistLoader {
       return new Array(MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS).fill(0)
 
     // Step 3: Compute the intensity-weighted center of mass of the digit.
-    // Each pixel's position is weighted by its brightness, so brighter
-    // pixels pull the center more. The offset (dx, dy) is the integer
-    // translation needed to move this center to the grid center (14, 14).
+    //
+    // A naive sumX += x * w would zero out the contribution of any pixel
+    // on the first column (x=0) or first row (y=0), effectively ignoring
+    // them. Shifting to 1-based coordinates before the multiply avoids
+    // this, and subtracting 1 afterwards restores the original scale.
+    //
+    // The offset (dx, dy) is the integer translation needed to move the
+    // center of mass to the grid center (14, 14).
     let sumX = 0,
       sumY = 0,
       totalWeight = 0
@@ -277,19 +282,26 @@ export class MnistLoader {
         const w = grid[y][x]
 
         if (w > 0) {
-          sumX += x * w
-          sumY += y * w
+          sumX += (x + 1) * w
+          sumY += (y + 1) * w
+
           totalWeight += w
         }
       }
     }
 
-    const centerOfMassX = sumX / totalWeight
-    const centerOfMassY = sumY / totalWeight
+    const centerOfMassX = sumX / totalWeight - 1
+    const centerOfMassY = sumY / totalWeight - 1
     const centerX = MNIST_IMAGE_COLS / 2
     const centerY = MNIST_IMAGE_ROWS / 2
     const dx = Math.round(centerX - centerOfMassX)
     const dy = Math.round(centerY - centerOfMassY)
+
+    console.log(
+      `Center of mass: (${centerOfMassX.toFixed(
+        2,
+      )}, ${centerOfMassY.toFixed(2)}), translation: (${dx}, ${dy})`,
+    )
 
     // Step 4: Translate to center the digit
     const centered: number[][] = timesMap(MNIST_IMAGE_ROWS, () =>
