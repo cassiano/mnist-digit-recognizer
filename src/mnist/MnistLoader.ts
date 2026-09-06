@@ -284,12 +284,12 @@ export class MnistLoader {
       }
     }
 
-    const comX = sumX / totalWeight
-    const comY = sumY / totalWeight
+    const centerOfMassX = sumX / totalWeight
+    const centerOfMassY = sumY / totalWeight
     const centerX = MNIST_IMAGE_COLS / 2
     const centerY = MNIST_IMAGE_ROWS / 2
-    const dx = Math.round(centerX - comX)
-    const dy = Math.round(centerY - comY)
+    const dx = Math.round(centerX - centerOfMassX)
+    const dy = Math.round(centerY - centerOfMassY)
 
     // Step 4: Translate to center the digit
     const centered: number[][] = timesMap(MNIST_IMAGE_ROWS, () =>
