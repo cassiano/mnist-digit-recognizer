@@ -13,12 +13,12 @@
  * - Derivative: 1 if x > 0, else 0
  */
 export function relu(x: number): number {
-  return x > 0 ? x : 0;
+  return x > 0 ? x : 0
 }
 
 /** Derivative of ReLU: 1 for positive inputs, 0 otherwise */
 export function reluDeriv(x: number): number {
-  return x > 0 ? 1 : 0;
+  return x > 0 ? 1 : 0
 }
 
 /**
@@ -30,17 +30,21 @@ export function reluDeriv(x: number): number {
  */
 export function sigmoid(x: number): number {
   if (x >= 0) {
-    const z = Math.exp(-x);
-    return 1 / (1 + z);
+    const z = Math.exp(-x)
+
+    return 1 / (1 + z)
   }
-  const z = Math.exp(x);
-  return z / (1 + z);
+
+  const z = Math.exp(x)
+
+  return z / (1 + z)
 }
 
 /** Derivative of sigmoid: s * (1 - s) where s = sigmoid(x) */
 export function sigmoidDeriv(x: number): number {
-  const s = sigmoid(x);
-  return s * (1 - s);
+  const s = sigmoid(x)
+
+  return s * (1 - s)
 }
 
 /**
@@ -52,8 +56,9 @@ export function sigmoidDeriv(x: number): number {
  * Formula: softmax(z_i) = e^(z_i) / Σ e^(z_j)
  */
 export function softmax(logits: number[]): number[] {
-  const max = Math.max(...logits);
-  const exps = logits.map(v => Math.exp(v - max));
-  const sum = exps.reduce((a, b) => a + b, 0);
-  return exps.map(e => e / sum);
+  const max = Math.max(...logits)
+  const exps = logits.map(v => Math.exp(v - max))
+  const sum = exps.reduce((a, b) => a + b, 0)
+
+  return exps.map(e => e / sum)
 }
