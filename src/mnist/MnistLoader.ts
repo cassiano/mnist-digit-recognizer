@@ -290,18 +290,12 @@ export class MnistLoader {
       }
     }
 
-    const centerOfMassX = sumX / totalWeight - 1
-    const centerOfMassY = sumY / totalWeight - 1
+    const centerOfMassX = Math.ceil(sumX / totalWeight - 1)
+    const centerOfMassY = Math.ceil(sumY / totalWeight - 1)
     const centerX = MNIST_IMAGE_COLS / 2
     const centerY = MNIST_IMAGE_ROWS / 2
     const dx = Math.round(centerX - centerOfMassX)
     const dy = Math.round(centerY - centerOfMassY)
-
-    console.log(
-      `Center of mass: (${centerOfMassX.toFixed(
-        2,
-      )}, ${centerOfMassY.toFixed(2)}), translation: (${dx}, ${dy})`,
-    )
 
     // Step 4: Translate to center the digit
     const centered: number[][] = timesMap(MNIST_IMAGE_ROWS, () =>
