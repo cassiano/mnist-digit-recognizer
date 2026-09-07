@@ -3,7 +3,7 @@ export const MNIST_IMAGE_ROWS = 28
 export const MNIST_IMAGE_COLS = 28
 export const MNIST_IMAGE_MAGIC = 0x00000803 // 2051
 export const MNIST_LABEL_MAGIC = 0x00000801 // 2049
-export const MNIST_PIXEL_MAX = 255
+export const MNIST_PIXEL_MAX = 2 ** 8 - 1 // 255
 
 // Neural Network Architecture
 export const INPUT_SIZE = MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS // 28x28 = 784 pixels
