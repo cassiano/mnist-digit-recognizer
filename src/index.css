@@ -504,10 +504,18 @@ button.danger:hover:not(:disabled) {
 
 .result-item {
   display: flex;
-  justify-content: space-between;
   padding: 6px 8px;
   font-size: 0.85rem;
   border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+}
+
+.result-item span:nth-child(1) {
+  width: 80px;
+}
+
+.result-item span:nth-child(2) {
+  width: 110px;
 }
 
 .result-item:last-child {

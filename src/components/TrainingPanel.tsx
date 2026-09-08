@@ -28,6 +28,7 @@ import {
   TIMER_INTERVAL_MS,
   STORAGE_KEY_MODEL,
   STORAGE_KEY_RESULTS,
+  EPSILON,
 } from '../constants'
 
 interface TrainingPanelProps {
@@ -178,6 +179,7 @@ export function TrainingPanel({
         if (abortRef.current) break
 
         let correct = 0
+        let totalLoss = 0
 
         // Fisher-Yates shuffle for random sampling each epoch
         const indices = timesMap(trainingData.inputs.length, i => i)
@@ -209,6 +211,8 @@ export function TrainingPanel({
               const predicted = output.indexOf(Math.max(...output))
 
               if (predicted === trainingData.labels[idx]) correct++
+
+              totalLoss += -Math.log(Math.max(output[trainingData.labels[idx]], EPSILON))
 
               net.backward(trainingData.labels[idx], currentLR)
               i++
@@ -262,7 +266,7 @@ export function TrainingPanel({
         const testAccuracy = testCorrect / testData.inputs.length
         const result: TrainingResult = {
           epoch: epoch + 1,
-          loss: 0,
+          loss: totalLoss / trainingData.inputs.length,
           accuracy: testAccuracy,
         }
 
