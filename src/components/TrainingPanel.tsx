@@ -326,7 +326,7 @@ export function TrainingPanel({
             onChange={e => setLearningRate(parseFloat(e.target.value) || DEFAULT_LEARNING_RATE)}
             min={0.001}
             max={1}
-            step={0.01}
+            step={0.001}
             disabled={isTraining}
           />
         </label>

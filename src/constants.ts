@@ -14,7 +14,7 @@ export const MAX_LAYER_SIZE = 256
 export const MIN_HIDDEN_LAYERS = 1
 
 // Training Defaults
-export const DEFAULT_LEARNING_RATE = 0.01
+export const DEFAULT_LEARNING_RATE = 0.005
 export const DEFAULT_EPOCHS = 5
 export const DEFAULT_BATCH_SIZE = 64
 export const LEARNING_RATE_DECAY = 0.999
