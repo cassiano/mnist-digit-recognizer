@@ -138,7 +138,6 @@ export function TrainingPanel({
     let elapsed = 0
 
     timerRef.current = setInterval(() => {
-
       if (timeLabelRef.current) {
         const mins = Math.floor(elapsed / 60)
         const secs = elapsed % 60
@@ -197,7 +196,9 @@ export function TrainingPanel({
               return
             }
 
-            const batchSize = document.hidden ? BACKGROUND_BATCH_SIZE : FOREGROUND_BATCH_SIZE
+            const batchSize = document.hidden
+              ? BACKGROUND_BATCH_SIZE
+              : FOREGROUND_BATCH_SIZE
             const end = Math.min(i + batchSize, indices.length)
 
             while (i < end) {
@@ -212,7 +213,9 @@ export function TrainingPanel({
 
               if (predicted === trainingData.labels[idx]) correct++
 
-              totalLoss += -Math.log(Math.max(output[trainingData.labels[idx]], EPSILON))
+              totalLoss += -Math.log(
+                Math.max(output[trainingData.labels[idx]], EPSILON),
+              )
 
               net.backward(trainingData.labels[idx], currentLR)
               i++
@@ -230,6 +233,7 @@ export function TrainingPanel({
 
               onTrainingTickRef.current?.()
             }
+
             if (i < indices.length) {
               setTimeout(chunk, 0)
             } else {
@@ -323,7 +327,11 @@ export function TrainingPanel({
           <input
             type="number"
             value={learningRate}
-            onChange={e => setLearningRate(parseFloat(e.target.value) || DEFAULT_LEARNING_RATE)}
+            onChange={e =>
+              setLearningRate(
+                parseFloat(e.target.value) || DEFAULT_LEARNING_RATE,
+              )
+            }
             min={0.001}
             max={1}
             step={0.001}

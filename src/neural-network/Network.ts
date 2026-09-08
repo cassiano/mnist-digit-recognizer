@@ -83,7 +83,7 @@ export class Network {
   }
 
   /**
-   * Backward pass through the entire network.
+   * Backward pass through the entire network, a.k.a. backpropagation.
    *
    * 1. Computes output layer error: delta = output - one_hot(target)
    *    This is the gradient of cross-entropy loss w.r.t. softmax pre-activations.
