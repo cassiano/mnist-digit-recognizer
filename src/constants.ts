@@ -26,6 +26,7 @@ export const EPSILON = 1e-15
 export const CANVAS_SIZE = 280
 export const CANVAS_DOT_RADIUS = 18
 export const CANVAS_LINE_WIDTH = 28
+export const MNIST_PREVIEW_SIZE = 140 // 28 * 5 — displayed size of the 28×28 preview
 
 // Training Performance
 export const FOREGROUND_BATCH_SIZE = 100

@@ -521,7 +521,34 @@ button.danger:hover:not(:disabled) {
 
 .drawing-canvas canvas {
   display: block;
-  margin: 0 auto 16px;
+}
+
+.canvas-and-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.canvas-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.canvas-dim-label {
+  font-size: 0.75rem;
+  color: var(--text);
+  opacity: 0.6;
+  font-weight: 500;
+  height: 1.2em;
 }
 
 .canvas-controls {

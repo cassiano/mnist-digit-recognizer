@@ -5,20 +5,23 @@
  * - Bottom: drawing canvas (white strokes on black, 280×280)
  * - Top: grid overlay (28×28 gray lines, transparent background)
  *
- * The grid is only a visual hint — it is never captured in the image data.
+ * A live 28×28 preview is shown in a side panel, displaying the exact
+ * downsampled image the network will process.
+ *
  * When "Recognize" is clicked, only the drawing canvas content is sent
  * to the parent for preprocessing and inference.
  *
  * Drawing uses mouse events (mousedown/move/up) with a thick brush (28px)
  * to produce bold strokes that downsample well to 28×28.
  */
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import {
   CANVAS_SIZE,
   CANVAS_DOT_RADIUS,
   CANVAS_LINE_WIDTH,
   MNIST_IMAGE_COLS,
   MNIST_IMAGE_ROWS,
+  MNIST_PREVIEW_SIZE,
 } from '../constants'
 
 interface DrawingCanvasProps {
@@ -35,8 +38,50 @@ export function DrawingCanvas({
 
   const drawCanvasRef = useRef<HTMLCanvasElement>(null)
   const gridCanvasRef = useRef<HTMLCanvasElement>(null)
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null)
+  /** Offscreen 28×28 canvas used for fast area-averaging downsampling */
+  const offscreenRef = useRef<HTMLCanvasElement | null>(null)
   /** Tracks the last mouse position to draw continuous lines between frames */
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
+  /** requestAnimationFrame id for throttling preview updates */
+  const rafId = useRef(0)
+
+  /** Renders the 28×28 preview by downsampling the drawing canvas */
+  const updatePreview = useCallback(() => {
+    const drawCanvas = drawCanvasRef.current
+    const previewCanvas = previewCanvasRef.current
+    if (!drawCanvas || !previewCanvas) return
+
+    let offscreen = offscreenRef.current
+    if (!offscreen) {
+      offscreen = document.createElement('canvas')
+      offscreen.width = MNIST_IMAGE_COLS
+      offscreen.height = MNIST_IMAGE_ROWS
+      offscreenRef.current = offscreen
+    }
+
+    const offCtx = offscreen.getContext('2d')
+    const previewCtx = previewCanvas.getContext('2d')
+    if (!offCtx || !previewCtx) return
+
+    // Downsample 280×280 → 28×28 (area averaging via browser scaling)
+    offCtx.drawImage(drawCanvas, 0, 0, MNIST_IMAGE_COLS, MNIST_IMAGE_ROWS)
+
+    // Scale 28×28 → display size with crisp pixel rendering
+    previewCtx.imageSmoothingEnabled = false
+    previewCtx.clearRect(0, 0, MNIST_PREVIEW_SIZE, MNIST_PREVIEW_SIZE)
+    previewCtx.drawImage(
+      offscreen,
+      0, 0, MNIST_IMAGE_COLS, MNIST_IMAGE_ROWS,
+      0, 0, MNIST_PREVIEW_SIZE, MNIST_PREVIEW_SIZE,
+    )
+  }, [])
+
+  /** Throttled preview update via requestAnimationFrame */
+  const schedulePreviewUpdate = useCallback(() => {
+    cancelAnimationFrame(rafId.current)
+    rafId.current = requestAnimationFrame(updatePreview)
+  }, [updatePreview])
 
   /** Draws a 28×28 grid of gray lines on the overlay canvas */
   const drawGrid = () => {
@@ -66,7 +111,7 @@ export function DrawingCanvas({
     }
   }
 
-  /** Initialize drawing canvas with black background and grid overlay on mount */
+  /** Initialize drawing canvas, grid overlay, and preview on mount */
   useEffect(() => {
     const ctx = drawCanvasRef.current?.getContext('2d')
     if (!ctx) return
@@ -74,7 +119,10 @@ export function DrawingCanvas({
     ctx.fillStyle = '#000'
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
     drawGrid()
-  }, [])
+    updatePreview()
+
+    return () => cancelAnimationFrame(rafId.current)
+  }, [updatePreview])
 
   /**
    * Converts browser mouse coordinates to canvas pixel coordinates.
@@ -112,6 +160,8 @@ export function DrawingCanvas({
         ctx.fillStyle = '#fff'
         ctx.fill()
       }
+
+      schedulePreviewUpdate()
     }
   }
 
@@ -136,6 +186,7 @@ export function DrawingCanvas({
       }
 
       lastPoint.current = point
+      schedulePreviewUpdate()
     }
   }
 
@@ -153,6 +204,7 @@ export function DrawingCanvas({
     ctx.fillStyle = '#000'
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
     setHasContent(false)
+    updatePreview()
   }
 
   /** Capture drawing canvas content (without grid) and send to parent */
@@ -176,37 +228,58 @@ export function DrawingCanvas({
   return (
     <div className="drawing-canvas">
       <h3>Draw a Digit</h3>
-      <div
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        style={{
-          position: 'relative',
-          width: CANVAS_SIZE,
-          height: CANVAS_SIZE,
-          cursor: disabled ? 'not-allowed' : 'crosshair',
-        }}
-      >
-        <canvas
-          ref={drawCanvasRef}
-          width={CANVAS_SIZE}
-          height={CANVAS_SIZE}
-          style={canvasStyle}
-        />
-        <canvas
-          ref={gridCanvasRef}
-          width={CANVAS_SIZE}
-          height={CANVAS_SIZE}
-          style={{
-            ...canvasStyle,
-            background: 'transparent',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-          }}
-        />
+      <div className="canvas-and-preview">
+        <div className="canvas-column">
+          <span className="canvas-dim-label">{CANVAS_SIZE}×{CANVAS_SIZE}</span>
+          <div
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{
+              position: 'relative',
+              width: CANVAS_SIZE,
+              height: CANVAS_SIZE,
+              cursor: disabled ? 'not-allowed' : 'crosshair',
+            }}
+          >
+            <canvas
+              ref={drawCanvasRef}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
+              style={canvasStyle}
+            />
+            <canvas
+              ref={gridCanvasRef}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
+              style={{
+                ...canvasStyle,
+                background: 'transparent',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
+        </div>
+        <div className="preview-section">
+          <span className="canvas-dim-label">{MNIST_IMAGE_COLS}×{MNIST_IMAGE_ROWS}</span>
+          <canvas
+            ref={previewCanvasRef}
+            width={MNIST_PREVIEW_SIZE}
+            height={MNIST_PREVIEW_SIZE}
+            style={{
+              width: MNIST_PREVIEW_SIZE,
+              height: MNIST_PREVIEW_SIZE,
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              background: '#000',
+              imageRendering: 'pixelated',
+            }}
+          />
+        </div>
       </div>
       <div className="canvas-controls">
         <button onClick={handleClear} disabled={disabled}>
