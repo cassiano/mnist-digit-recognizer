@@ -15,6 +15,7 @@
  * to produce bold strokes that downsample well to 28×28.
  */
 import { useRef, useState, useEffect, useCallback } from 'react'
+import { MnistLoader } from '../mnist/MnistLoader'
 import {
   CANVAS_SIZE,
   CANVAS_DOT_RADIUS,
@@ -39,14 +40,15 @@ export function DrawingCanvas({
   const drawCanvasRef = useRef<HTMLCanvasElement>(null)
   const gridCanvasRef = useRef<HTMLCanvasElement>(null)
   const previewCanvasRef = useRef<HTMLCanvasElement>(null)
-  /** Offscreen 28×28 canvas used for fast area-averaging downsampling */
+  /** Offscreen canvas used for reading drawing pixel data */
   const offscreenRef = useRef<HTMLCanvasElement | null>(null)
+  const mnistLoaderRef = useRef(new MnistLoader())
   /** Tracks the last mouse position to draw continuous lines between frames */
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
   /** requestAnimationFrame id for throttling preview updates */
   const rafId = useRef(0)
 
-  /** Renders the 28×28 preview by downsampling the drawing canvas */
+  /** Renders the 28×28 preview using the same preprocessing as the network */
   const updatePreview = useCallback(() => {
     const drawCanvas = drawCanvasRef.current
     const previewCanvas = previewCanvasRef.current
@@ -55,8 +57,8 @@ export function DrawingCanvas({
     let offscreen = offscreenRef.current
     if (!offscreen) {
       offscreen = document.createElement('canvas')
-      offscreen.width = MNIST_IMAGE_COLS
-      offscreen.height = MNIST_IMAGE_ROWS
+      offscreen.width = CANVAS_SIZE
+      offscreen.height = CANVAS_SIZE
       offscreenRef.current = offscreen
     }
 
@@ -64,8 +66,26 @@ export function DrawingCanvas({
     const previewCtx = previewCanvas.getContext('2d')
     if (!offCtx || !previewCtx) return
 
-    // Downsample 280×280 → 28×28 (area averaging via browser scaling)
-    offCtx.drawImage(drawCanvas, 0, 0, MNIST_IMAGE_COLS, MNIST_IMAGE_ROWS)
+    // Capture the drawing canvas content
+    offCtx.drawImage(drawCanvas, 0, 0)
+    const imageData = offCtx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+
+    // Get the centered, normalized 28×28 image (same as network input)
+    const image = mnistLoaderRef.current.preprocessCanvasData(imageData)
+
+    // Convert [0,1] floats back to grayscale pixel data
+    const pixelData = new ImageData(MNIST_IMAGE_COLS, MNIST_IMAGE_ROWS)
+
+    for (let i = 0; i < image.length; i++) {
+      const v = Math.round(image[i] * 255)
+      const idx = i * 4
+      pixelData.data[idx] = v
+      pixelData.data[idx + 1] = v
+      pixelData.data[idx + 2] = v
+      pixelData.data[idx + 3] = 255
+    }
+
+    offCtx.putImageData(pixelData, 0, 0)
 
     // Scale 28×28 → display size with crisp pixel rendering
     previewCtx.imageSmoothingEnabled = false
@@ -230,7 +250,9 @@ export function DrawingCanvas({
       <h3>Draw a Digit</h3>
       <div className="canvas-and-preview">
         <div className="canvas-column">
-          <span className="canvas-dim-label">{CANVAS_SIZE}×{CANVAS_SIZE}</span>
+          <span className="canvas-dim-label">
+            {CANVAS_SIZE}×{CANVAS_SIZE}
+          </span>
           <div
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -265,7 +287,9 @@ export function DrawingCanvas({
           </div>
         </div>
         <div className="preview-section">
-          <span className="canvas-dim-label">{MNIST_IMAGE_COLS}×{MNIST_IMAGE_ROWS}</span>
+          <span className="canvas-dim-label">
+            {MNIST_IMAGE_COLS}×{MNIST_IMAGE_ROWS}
+          </span>
           <canvas
             ref={previewCanvasRef}
             width={MNIST_PREVIEW_SIZE}
