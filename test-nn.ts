@@ -3,7 +3,9 @@
 
 // To run it: `npx tsx test-nn.ts`
 
+import { EPSILON } from './src/constants'
 import { Network } from './src/neural-network/Network'
+import { timesMap } from './src/utils'
 
 // ── Tiny network: 3 → 4 → 2 ────────────────────────────────────────────────
 const tiny = new Network({
@@ -46,7 +48,7 @@ for (let epoch = 0; epoch < 100; epoch++) {
 
   for (const d of trainingData) {
     const result = tiny.predict(d.input)
-    const loss = -Math.log(Math.max(result.probabilities[d.label], 1e-15))
+    const loss = -Math.log(Math.max(result.probabilities[d.label], EPSILON)) // cross-entropy loss
 
     totalLoss += loss
     if (result.digit === d.label) correct++
@@ -78,9 +80,9 @@ const mnist = new Network({
   activation: 'relu',
 })
 
-const mnistData = Array.from({ length: 10 }, (_, s) => ({
-  input: Array.from({ length: 784 }, () => Math.random()),
-  label: s,
+const mnistData = timesMap(10, i => ({
+  input: timesMap(784, () => Math.random()),
+  label: i,
 }))
 
 function mnistHasNaN() {
