@@ -18,8 +18,7 @@
 import { EPSILON } from '../constants'
 
 export function crossEntropy(predicted: number[], actual: number): number {
-  const epsilon = EPSILON
-  const clipped = Math.max(epsilon, Math.min(1 - epsilon, predicted[actual]))
+  const clipped = Math.max(EPSILON, Math.min(1 - EPSILON, predicted[actual]))
 
   return -Math.log(clipped)
 }
@@ -32,10 +31,10 @@ export function crossEntropyBatch(
   predictions: number[][],
   actuals: number[],
 ): number {
-  let totalLoss = 0
-
-  for (let i = 0; i < predictions.length; i++)
-    totalLoss += crossEntropy(predictions[i], actuals[i])
+  const totalLoss = predictions.reduce(
+    (acc, prediction, i) => acc + crossEntropy(prediction, actuals[i]),
+    0,
+  )
 
   return totalLoss / predictions.length
 }
@@ -48,10 +47,10 @@ export function crossEntropyBatch(
  * because cross-entropy provides better gradient properties for softmax output.
  */
 export function mse(predicted: number[], actual: number[]): number {
-  let sum = 0
-
-  for (let i = 0; i < predicted.length; i++)
-    sum += Math.pow(predicted[i] - actual[i], 2)
+  const sum = predicted.reduce(
+    (acc, value, i) => acc + (value - actual[i]) ** 2,
+    0,
+  )
 
   return sum / predicted.length
 }

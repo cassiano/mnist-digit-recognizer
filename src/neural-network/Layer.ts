@@ -1,7 +1,7 @@
 import { Neuron } from './Neuron'
 import { relu, reluDeriv, sigmoid, sigmoidDeriv, softmax } from './Activation'
 import type { ActivationType } from './types'
-import { timesMap } from '../utils'
+import { timesForEach, timesMap } from '../utils'
 
 /**
  * A single layer in the neural network.
@@ -25,7 +25,7 @@ export class Layer {
   activation: ActivationType
 
   /** Inputs from the previous layer, stored for backpropagation */
-  private inputs: number[] = []
+  inputs: number[] = []
   /** Pre-activation values (z = Wx + b), stored for computing activation derivatives */
   preActivations: number[] = []
   /** Post-activation outputs, used as inputs to the next layer */
@@ -56,14 +56,16 @@ export class Layer {
     this.preActivations = new Array(this.outputSize)
 
     // Compute weighted sum + bias for each neuron
-    for (let i = 0; i < this.outputSize; i++) {
-      const n = this.neurons[i]
-      let sum = n.bias
+    timesForEach(this.outputSize, i => {
+      const neuron = this.neurons[i]
+      let z = neuron.bias // z = Wx + b
 
-      for (let j = 0; j < this.inputSize; j++) sum += n.weights[j] * inputs[j]
+      timesForEach(this.inputSize, j => {
+        z += neuron.weights[j] * inputs[j]
+      })
 
-      this.preActivations[i] = sum
-    }
+      this.preActivations[i] = z
+    })
 
     // Apply activation function
     if (this.activation === 'softmax') {
@@ -94,7 +96,7 @@ export class Layer {
   backward(outputDeltas: number[], learningRate: number): number[] {
     const inputDeltas = new Array(this.inputSize).fill(0)
 
-    for (let i = 0; i < this.outputSize; i++) {
+    timesForEach(this.outputSize, i => {
       // Compute local gradient (delta) based on activation function
       let delta: number
 
@@ -109,15 +111,15 @@ export class Layer {
       }
 
       // Update weights and bias, accumulate input deltas for previous layer
-      const n = this.neurons[i]
+      const neuron = this.neurons[i]
 
-      for (let j = 0; j < this.inputSize; j++) {
-        inputDeltas[j] += n.weights[j] * delta
-        n.weights[j] -= learningRate * delta * this.inputs[j]
-      }
+      timesForEach(this.inputSize, j => {
+        inputDeltas[j] += neuron.weights[j] * delta
+        neuron.weights[j] -= learningRate * delta * this.inputs[j]
+      })
 
-      n.bias -= learningRate * delta
-    }
+      neuron.bias -= learningRate * delta
+    })
 
     return inputDeltas
   }

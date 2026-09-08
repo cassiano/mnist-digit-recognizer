@@ -34,22 +34,19 @@ export class Network {
 
   constructor(config: NetworkConfig) {
     this.learningRate = config.learningRate
-    this.layers = []
 
     // Create layers: for each consecutive pair of sizes, create a layer
     const layerSizes = config.layers
 
-    for (let i = 0; i < layerSizes.length - 1; i++) {
+    this.layers = timesMap(layerSizes.length - 1, i => {
       const isOutput = i === layerSizes.length - 2
 
-      this.layers.push(
-        new Layer(
-          layerSizes[i],
-          layerSizes[i + 1],
-          isOutput ? 'softmax' : config.activation || 'relu',
-        ),
+      return new Layer(
+        layerSizes[i],
+        layerSizes[i + 1],
+        isOutput ? 'softmax' : (config.activation ?? 'relu'),
       )
-    }
+    })
   }
 
   /**
@@ -155,7 +152,8 @@ export class Network {
         this.backward(labels[idx])
 
         // Learning rate decay: reduce by 0.1% every batchSize samples
-        if (i % batchSize === 0 && i > 0) this.learningRate *= LEARNING_RATE_DECAY
+        if (i % batchSize === 0 && i > 0)
+          this.learningRate *= LEARNING_RATE_DECAY
       }
 
       const accuracy = correct / inputs.length
