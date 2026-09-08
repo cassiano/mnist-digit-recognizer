@@ -67,8 +67,8 @@ export class Network {
    * Runs forward pass, then finds the digit with highest probability.
    * Returns the predicted digit, its confidence, and full probability distribution.
    */
-  predict(input: number[]): Prediction {
-    const probabilities = this.forward(input)
+  predict(inputs: number[]): Prediction {
+    const probabilities = this.forward(inputs)
     let maxIdx = 0
     let maxVal = probabilities[0]
 
