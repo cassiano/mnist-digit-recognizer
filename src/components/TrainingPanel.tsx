@@ -182,11 +182,7 @@ export function TrainingPanel({
 
         // Fisher-Yates shuffle for random sampling each epoch
         const indices = timesMap(trainingData.inputs.length, i => i)
-        for (let k = indices.length - 1; k > 0; k--) {
-          const j = Math.floor(Math.random() * (k + 1))
-
-          ;[indices[k], indices[j]] = [indices[j], indices[k]]
-        }
+        Network.shuffle(indices)
 
         let i = 0
         const aborted = await new Promise<boolean>(resolve => {

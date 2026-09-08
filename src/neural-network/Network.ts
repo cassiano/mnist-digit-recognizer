@@ -133,7 +133,7 @@ export class Network {
 
       // Fisher-Yates shuffle for random sampling
       const indices = timesMap(inputs.length, i => i)
-      this.shuffle(indices)
+      Network.shuffle(indices)
 
       for (let i = 0; i < indices.length; i++) {
         const idx = indices[i]
@@ -162,7 +162,7 @@ export class Network {
    * Fisher-Yates (Knuth) shuffle: randomizes array in-place in O(n).
    * Used to ensure each epoch sees training data in a different order.
    */
-  private shuffle(array: number[]): void {
+  static shuffle(array: number[]): void {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
 
