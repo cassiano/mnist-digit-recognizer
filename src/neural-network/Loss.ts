@@ -6,21 +6,25 @@
  * compute gradients during backpropagation.
  */
 
+import { EPSILON } from '../constants'
+
+/**
+ * Cross-entropy loss from a single probability value.
+ *
+ * L = -log(p), clipped to [epsilon, 1-epsilon] to avoid log(0) or log(1).
+ */
+export function crossEntropyLoss(p: number): number {
+  return -Math.log(Math.max(EPSILON, Math.min(1 - EPSILON, p)))
+}
+
 /**
  * Cross-entropy loss for a single prediction.
  *
  * For classification, cross-entropy measures the negative log probability
  * of the true class: L = -log(p_target)
- *
- * The prediction is clipped to [epsilon, 1-epsilon] to avoid log(0) = -Infinity
- * which would occur if the network predicts probability 0 for the correct class.
  */
-import { EPSILON } from '../constants'
-
 export function crossEntropy(predicted: number[], actual: number): number {
-  const clipped = Math.max(EPSILON, Math.min(1 - EPSILON, predicted[actual]))
-
-  return -Math.log(clipped)
+  return crossEntropyLoss(predicted[actual])
 }
 
 /**

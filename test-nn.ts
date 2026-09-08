@@ -3,7 +3,7 @@
 
 // To run it: `npx tsx test-nn.ts`
 
-import { EPSILON } from './src/constants'
+import { crossEntropyLoss } from './src/neural-network/Loss'
 import { Network } from './src/neural-network/Network'
 import { timesMap } from './src/utils'
 
@@ -48,7 +48,7 @@ for (let epoch = 0; epoch < 100; epoch++) {
 
   for (const d of trainingData) {
     const result = tiny.predict(d.input)
-    const loss = -Math.log(Math.max(result.probabilities[d.label], EPSILON)) // cross-entropy loss
+    const loss = crossEntropyLoss(result.probabilities[d.label])
 
     totalLoss += loss
     if (result.digit === d.label) correct++

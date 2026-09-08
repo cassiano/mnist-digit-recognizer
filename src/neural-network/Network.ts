@@ -1,10 +1,7 @@
 import { Layer } from './Layer'
+import { crossEntropyLoss } from './Loss'
 import { timesMap } from '../utils'
-import {
-  DEFAULT_LEARNING_RATE,
-  EPSILON,
-  LEARNING_RATE_DECAY,
-} from '../constants'
+import { DEFAULT_LEARNING_RATE, LEARNING_RATE_DECAY } from '../constants'
 import type {
   NetworkConfig,
   TrainingData,
@@ -145,9 +142,7 @@ export class Network {
 
         if (predicted === labels[idx]) correct++
 
-        // Cross-entropy loss: -log(p_target)
-        const targetVal = output[labels[idx]]
-        totalLoss += -Math.log(Math.max(targetVal, EPSILON))
+        totalLoss += crossEntropyLoss(output[labels[idx]])
 
         this.backward(labels[idx])
 

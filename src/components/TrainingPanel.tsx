@@ -16,6 +16,7 @@
  */
 import { useState, useRef, useEffect } from 'react'
 import { Network } from '../neural-network/Network'
+import { crossEntropyLoss } from '../neural-network/Loss'
 import { MnistLoader } from '../mnist/MnistLoader'
 import type { TrainingResult } from '../neural-network/types'
 import { timesMap } from '../utils'
@@ -28,7 +29,6 @@ import {
   TIMER_INTERVAL_MS,
   STORAGE_KEY_MODEL,
   STORAGE_KEY_RESULTS,
-  EPSILON,
 } from '../constants'
 
 interface TrainingPanelProps {
@@ -213,9 +213,7 @@ export function TrainingPanel({
 
               if (predicted === trainingData.labels[idx]) correct++
 
-              totalLoss += -Math.log(
-                Math.max(output[trainingData.labels[idx]], EPSILON),
-              )
+              totalLoss += crossEntropyLoss(output[trainingData.labels[idx]])
 
               net.backward(trainingData.labels[idx], currentLR)
               i++
