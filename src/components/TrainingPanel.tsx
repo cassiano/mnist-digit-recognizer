@@ -398,7 +398,7 @@ export function TrainingPanel({
               <div key={r.epoch} className="result-item">
                 <span>Epoch {r.epoch}</span>
                 <span>Loss: {r.loss.toFixed(4)}</span>
-                <span>Acc: {(r.accuracy * 100).toFixed(2)}%</span>
+                <span>Accuracy: {(r.accuracy * 100).toFixed(2)}%</span>
               </div>
             ))}
           </div>
