@@ -23,9 +23,9 @@ const trainingData = [
 
 function hasNaN() {
   for (const layer of tiny.layers) {
-    for (const n of layer.neurons) {
-      for (const w of n.weights) {
-        if (!Number.isFinite(w)) return true
+    for (const neuron of layer.neurons) {
+      for (const weight of neuron.weights) {
+        if (!Number.isFinite(weight)) return true
       }
     }
   }
@@ -87,9 +87,9 @@ const mnistData = timesMap(10, i => ({
 
 function mnistHasNaN() {
   for (const layer of mnist.layers) {
-    for (const n of layer.neurons) {
-      for (const w of n.weights) {
-        if (!Number.isFinite(w)) return true
+    for (const neuron of layer.neurons) {
+      for (const weight of neuron.weights) {
+        if (!Number.isFinite(weight)) return true
       }
     }
   }
@@ -109,25 +109,27 @@ console.log(`  Output: [${initResult.probabilities.map(v => v.toFixed(4))}]`)
 for (let epoch = 0; epoch < 50; epoch++) {
   let correct = 0
 
-  for (const d of mnistData) {
-    const result = mnist.predict(d.input)
+  for (const image of mnistData) {
+    const result = mnist.predict(image.input)
 
-    if (result.digit === d.label) correct++
+    if (result.digit === image.label) correct++
 
-    mnist.backward(d.label)
+    mnist.backward(image.label)
   }
 
   if (epoch % 10 === 0) {
-    console.log(`Epoch ${epoch}: acc=${correct}/10 hasNaN=${mnistHasNaN()}`)
+    console.log(
+      `Epoch ${epoch}: accuracy=${correct}/10 hasNaN=${mnistHasNaN()}`,
+    )
   }
 }
 
 // Final check
 console.log('\nFinal forward:')
-for (const d of mnistData) {
-  const result = mnist.predict(d.input)
+for (const image of mnistData) {
+  const result = mnist.predict(image.input)
   console.log(
-    `  target=${d.label} predicted=${result.digit} probs=[${result.probabilities.map(v => v.toFixed(3))}] NaN=${result.probabilities.some(v => !Number.isFinite(v))}`,
+    `  target=${image.label} predicted=${result.digit} probs=[${result.probabilities.map(v => v.toFixed(3))}] NaN=${result.probabilities.some(v => !Number.isFinite(v))}`,
   )
 }
 
