@@ -18,7 +18,7 @@
   --mono: 'SF Mono', 'Fira Code', monospace;
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --text: #d0d0d0;
   --text-h: #f0f0f0;
   --bg: #1a1a1a;
@@ -108,8 +108,8 @@ main {
   grid-template-columns: 0.5fr 1fr 0.35fr;
   grid-template-rows: auto auto;
   grid-template-areas:
-    "arch training canvas"
-    "viz  viz      canvas";
+    'arch training canvas'
+    'viz  viz      canvas';
   gap: 24px;
 }
 
@@ -117,10 +117,10 @@ main {
   main {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "arch"
-      "training"
-      "canvas"
-      "viz";
+      'arch'
+      'training'
+      'canvas'
+      'viz';
   }
 }
 
@@ -171,6 +171,10 @@ h4 {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
+}
+
+.training-panel {
+  min-height: 725px;
 }
 
 .architecture {
@@ -498,7 +502,7 @@ button.danger:hover:not(:disabled) {
 }
 
 .results-list {
-  max-height: 200px;
+  max-height: 370px;
   overflow-y: auto;
 }
 
@@ -525,6 +529,10 @@ button.danger:hover:not(:disabled) {
 /* Drawing Canvas */
 .drawing-canvas {
   text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
 }
 
 .drawing-canvas canvas {
