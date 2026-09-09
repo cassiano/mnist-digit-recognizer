@@ -1,6 +1,6 @@
 import { Layer } from './Layer'
 import { crossEntropyLoss } from './Loss'
-import { timesMap } from '../utils'
+import { reversedForEach, timesForEach, timesMap } from '../utils'
 import { DEFAULT_LEARNING_RATE, LEARNING_RATE_DECAY } from '../constants'
 import type {
   NetworkConfig,
@@ -96,14 +96,16 @@ export class Network {
     // Output layer error: difference between prediction and one-hot target
     const outputDeltas = new Array(outputLayer.outputSize)
 
-    for (let i = 0; i < outputLayer.outputSize; i++)
+    timesForEach(outputLayer.outputSize, i => {
       outputDeltas[i] = outputLayer.outputs[i] - (i === target ? 1 : 0)
+    })
 
     // Propagate deltas backwards through all layers
     let deltas = outputDeltas
 
-    for (let l = this.layers.length - 1; l >= 0; l--)
-      deltas = this.layers[l].backward(deltas, lr)
+    reversedForEach(this.layers, layer => {
+      deltas = layer.backward(deltas, lr)
+    })
   }
 
   /**
