@@ -24,7 +24,6 @@ import {
   DEFAULT_EPOCHS,
   DEFAULT_LEARNING_RATE,
   DEFAULT_BATCH_SIZE,
-  FOREGROUND_BATCH_SIZE,
   BACKGROUND_BATCH_SIZE,
   TIMER_INTERVAL_MS,
   STORAGE_KEY_MODEL,
@@ -192,12 +191,13 @@ export function TrainingPanel({
               return
             }
 
-            const batchSize = document.hidden
-              ? BACKGROUND_BATCH_SIZE
-              : FOREGROUND_BATCH_SIZE
-            const end = Math.min(i + batchSize, indices.length)
+            const currentBatchSize = !document.hidden
+              ? batchSize
+              : BACKGROUND_BATCH_SIZE
 
-            while (i < end) {
+            const batchEnd = Math.min(i + currentBatchSize, indices.length)
+
+            while (i < batchEnd) {
               if (abortRef.current) {
                 resolve(true)
                 return
@@ -211,9 +211,11 @@ export function TrainingPanel({
 
               totalLoss += crossEntropyLoss(output[trainingData.labels[idx]])
 
+              // FIXME: backpropagation deveria ocorrer a cada batch (e não a cada sample).
               net.backward(trainingData.labels[idx], currentLR)
               i++
             }
+
             if (!document.hidden) {
               const processed = epoch * indices.length + i
 
