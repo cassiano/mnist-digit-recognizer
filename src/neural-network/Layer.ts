@@ -115,9 +115,12 @@ export class Layer {
 
       timesForEach(this.inputSize, j => {
         inputDeltas[j] += neuron.weights[j] * delta
+
+        // [/doc_img/Layer.ts/2026-09-09-18-44-06.png]
         neuron.weights[j] -= learningRate * delta * this.inputs[j]
       })
 
+      // [/doc_img/Layer.ts/2026-09-09-18-56-56.png]
       neuron.bias -= learningRate * delta
     })
 
