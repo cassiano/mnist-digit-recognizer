@@ -234,7 +234,7 @@ export function NetworkVisualization({
         {/* Draw layers: background rect, neurons, labels */}
         {layerData.map((layer, l) => {
           const actLabel =
-            l === 0 ? '' : layer.activation === 'softmax' ? 'softmax' : 'relu'
+            l === 0 ? '' : layer.activation
 
           return (
             <g key={l}>
@@ -336,7 +336,7 @@ export function NetworkVisualization({
                   x={layer.x}
                   y={10}
                   textAnchor="middle"
-                  fill={actLabel === 'softmax' ? '#4ecdc4' : '#e94560'}
+                  fill={l === 0 || l === layerData.length - 1 ? '#4ecdc4' : '#e94560'}
                   fontSize="12"
                   fontFamily="var(--mono)"
                   opacity={0.7}

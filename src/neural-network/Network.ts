@@ -3,6 +3,7 @@ import { crossEntropyLoss } from './Loss'
 import { reversedForEach, timesForEach, timesMap } from '../utils'
 import { DEFAULT_LEARNING_RATE, LEARNING_RATE_DECAY } from '../constants'
 import type {
+  ActivationType,
   NetworkConfig,
   TrainingData,
   TrainingResult,
@@ -35,13 +36,22 @@ export class Network {
     // Create layers: for each consecutive pair of sizes, create a layer
     const layerSizes = config.layers
 
+    // Resolve per-layer activations from single value or array
+    const resolveActivation = (i: number): ActivationType => {
+      if (Array.isArray(config.activation)) {
+        return config.activation[i] ?? 'relu'
+      }
+
+      return config.activation ?? 'relu'
+    }
+
     this.layers = timesMap(layerSizes.length - 1, i => {
       const isOutput = i === layerSizes.length - 2
 
       return new Layer(
         layerSizes[i],
         layerSizes[i + 1],
-        isOutput ? 'softmax' : (config.activation ?? 'relu'),
+        isOutput ? 'softmax' : resolveActivation(i),
       )
     })
   }
@@ -239,10 +249,13 @@ export class Network {
       data.layerSizes[0][0],
       ...data.layerSizes.map((l: number[]) => l[1]),
     ]
+    const activations = data.layerSizes
+      .slice(0, -1)
+      .map((l: (string | number)[]) => (l[2] ?? 'relu') as ActivationType)
     const net = new Network({
       layers: sizes,
       learningRate: DEFAULT_LEARNING_RATE,
-      activation: 'relu',
+      activation: activations,
     })
 
     for (let l = 0; l < data.weights.length; l++) {

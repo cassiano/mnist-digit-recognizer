@@ -297,6 +297,21 @@ h4 {
   border-color: var(--accent);
 }
 
+.layer-row select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.layer-row select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .layer-size {
   font-size: 0.9rem;
   color: var(--text);

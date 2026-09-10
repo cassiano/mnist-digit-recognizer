@@ -12,12 +12,15 @@ export type ActivationType = 'relu' | 'sigmoid' | 'softmax' | 'none'
  * Configuration for creating a new neural network.
  * @property layers - Array of layer sizes, e.g. [784, 16, 16, 10] for input→hidden→output
  * @property learningRate - Step size for gradient descent updates
- * @property activation - Activation function for hidden layers (default: 'relu')
+ * @property activation - Activation function(s) for hidden layers.
+ *   - Single value: applied to all hidden layers
+ *   - Array: per-layer activation (one entry per hidden layer)
+ *   - Default: 'relu'
  */
 export interface NetworkConfig {
   layers: number[]
   learningRate: number
-  activation?: ActivationType
+  activation?: ActivationType | ActivationType[]
 }
 
 /**

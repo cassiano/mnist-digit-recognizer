@@ -25,12 +25,14 @@ import { NetworkInfo } from './components/NetworkInfo'
 import { NetworkVisualization } from './components/NetworkVisualization'
 import { PredictionResult } from './components/PredictionResult'
 import { ThemeToggle } from './components/ThemeToggle'
-import type { Prediction } from './neural-network/types'
+import type { ActivationType, Prediction } from './neural-network/types'
 import {
   INPUT_SIZE,
   OUTPUT_SIZE,
   DEFAULT_HIDDEN_LAYER_SIZE,
   DEFAULT_LEARNING_RATE,
+  DEFAULT_ACTIVATION,
+  HIDDEN_LAYER_ACTIVATIONS,
   MIN_LAYER_SIZE,
   MAX_LAYER_SIZE,
   STORAGE_KEY_MODEL,
@@ -39,16 +41,25 @@ import {
 } from './constants'
 
 /**
- * Creates a new network with the given hidden layer sizes.
+ * Creates a new network with the given hidden layer sizes and activations.
  * Architecture: [784, ...hiddenLayerSizes, 10]
  * - Input: 784 (28×28 pixels)
  * - Output: 10 (digits 0-9)
- * - Default learning rate: 0.01, activation: ReLU
+ * - Default learning rate: 0.005
  */
-function buildNetwork(hiddenLayerSizes: number[]) {
+function buildNetwork(
+  hiddenLayerSizes: number[],
+  activations: ActivationType[] = [],
+) {
   const layers = [INPUT_SIZE, ...hiddenLayerSizes, OUTPUT_SIZE]
+  const layerActivations =
+    activations.length > 0 ? activations : undefined
 
-  return new Network({ layers, learningRate: DEFAULT_LEARNING_RATE, activation: 'relu' })
+  return new Network({
+    layers,
+    learningRate: DEFAULT_LEARNING_RATE,
+    activation: layerActivations ?? DEFAULT_ACTIVATION,
+  })
 }
 
 /**
@@ -62,6 +73,7 @@ function buildNetwork(hiddenLayerSizes: number[]) {
 function loadSavedState(): {
   network: Network
   hiddenLayerSizes: number[]
+  hiddenLayerActivations: ActivationType[]
   results: { epoch: number; loss: number; accuracy: number }[]
 } | null {
   try {
@@ -95,6 +107,7 @@ function loadSavedState(): {
 
     // Extract hidden layer sizes (exclude input 784 and output 10)
     const hiddenLayerSizes = net.layers.map(l => l.outputSize).slice(0, -1)
+    const hiddenLayerActivations = net.layers.slice(0, -1).map(l => l.activation)
 
     // Load training results
     let results: { epoch: number; loss: number; accuracy: number }[] = []
@@ -106,7 +119,7 @@ function loadSavedState(): {
       // Ignore parse errors
     }
 
-    return { network: net, hiddenLayerSizes, results }
+    return { network: net, hiddenLayerSizes, hiddenLayerActivations, results }
   } catch {
     localStorage.removeItem(STORAGE_KEY_MODEL)
 
@@ -125,6 +138,7 @@ function App() {
     if (saved) {
       return {
         sizes: saved.hiddenLayerSizes,
+        activations: saved.hiddenLayerActivations,
         network: saved.network,
         trained: true,
         results: saved.results,
@@ -132,11 +146,21 @@ function App() {
     }
 
     const sizes = [DEFAULT_HIDDEN_LAYER_SIZE, DEFAULT_HIDDEN_LAYER_SIZE]
+    const activations = [DEFAULT_ACTIVATION, DEFAULT_ACTIVATION]
 
-    return { sizes, network: buildNetwork(sizes), trained: false, results: [] }
+    return {
+      sizes,
+      activations,
+      network: buildNetwork(sizes, activations),
+      trained: false,
+      results: [],
+    }
   })
 
   const [hiddenLayerSizes, setHiddenLayerSizes] = useState(initData.sizes)
+  const [hiddenLayerActivations, setHiddenLayerActivations] = useState<ActivationType[]>(
+    initData.activations,
+  )
   const [network, setNetwork] = useState(initData.network)
   /** Ref to access current network in async callbacks without stale closures */
   const networkRef = useRef(network)
@@ -216,9 +240,11 @@ function App() {
   /** Adds a new hidden layer with the default size to the architecture */
   const addLayer = () => {
     const newSizes = [...hiddenLayerSizes, DEFAULT_HIDDEN_LAYER_SIZE]
+    const newActivations = [...hiddenLayerActivations, DEFAULT_ACTIVATION]
 
     setHiddenLayerSizes(newSizes)
-    setNetwork(buildNetwork(newSizes))
+    setHiddenLayerActivations(newActivations)
+    setNetwork(buildNetwork(newSizes, newActivations))
     setIsTrained(false)
   }
 
@@ -227,9 +253,11 @@ function App() {
     if (hiddenLayerSizes.length <= 1) return
 
     const newSizes = hiddenLayerSizes.filter((_, i) => i !== index)
+    const newActivations = hiddenLayerActivations.filter((_, i) => i !== index)
 
     setHiddenLayerSizes(newSizes)
-    setNetwork(buildNetwork(newSizes))
+    setHiddenLayerActivations(newActivations)
+    setNetwork(buildNetwork(newSizes, newActivations))
     setIsTrained(false)
   }
 
@@ -240,7 +268,18 @@ function App() {
     newSizes[index] = Math.max(MIN_LAYER_SIZE, Math.min(MAX_LAYER_SIZE, size || MIN_LAYER_SIZE))
 
     setHiddenLayerSizes(newSizes)
-    setNetwork(buildNetwork(newSizes))
+    setNetwork(buildNetwork(newSizes, hiddenLayerActivations))
+    setIsTrained(false)
+  }
+
+  /** Updates the activation function for a specific hidden layer */
+  const updateActivation = (index: number, activation: ActivationType) => {
+    const newActivations = [...hiddenLayerActivations]
+
+    newActivations[index] = activation
+
+    setHiddenLayerActivations(newActivations)
+    setNetwork(buildNetwork(hiddenLayerSizes, newActivations))
     setIsTrained(false)
   }
 
@@ -249,7 +288,7 @@ function App() {
     localStorage.removeItem(STORAGE_KEY_MODEL)
     localStorage.removeItem(STORAGE_KEY_RESULTS)
 
-    const fresh = buildNetwork(hiddenLayerSizes)
+    const fresh = buildNetwork(hiddenLayerSizes, hiddenLayerActivations)
 
     setNetwork(fresh)
     setIsTrained(false)
@@ -287,6 +326,19 @@ function App() {
                     min={MIN_LAYER_SIZE}
                     max={MAX_LAYER_SIZE}
                   />
+                  <select
+                    value={hiddenLayerActivations[index]}
+                    onChange={e =>
+                      updateActivation(index, e.target.value as ActivationType)
+                    }
+                    title="Activation function"
+                  >
+                    {HIDDEN_LAYER_ACTIVATIONS.map(act => (
+                      <option key={act} value={act}>
+                        {act}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     className="remove-btn"
                     onClick={() => removeLayer(index)}
