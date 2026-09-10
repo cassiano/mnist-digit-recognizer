@@ -15,7 +15,7 @@ export const MIN_LAYER_SIZE = 1
 export const MAX_LAYER_SIZE = 256
 export const MIN_HIDDEN_LAYERS = 1
 export const DEFAULT_ACTIVATION: ActivationType = 'relu'
-export const HIDDEN_LAYER_ACTIVATIONS: readonly ActivationType[] = ['relu', 'sigmoid']
+export const HIDDEN_LAYER_ACTIVATIONS: readonly ActivationType[] = ['relu', 'sigmoid', 'tanh']
 
 // Training Defaults
 export const DEFAULT_LEARNING_RATE = 0.005

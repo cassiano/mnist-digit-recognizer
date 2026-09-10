@@ -48,6 +48,23 @@ export function sigmoidDeriv(x: number): number {
 }
 
 /**
+ * Tanh (Hyperbolic Tangent): f(x) = (e^x - e^(-x)) / (e^x + e^(-x))
+ * - Maps any real number to (-1, 1)
+ * - Zero-centered, which can help with convergence compared to sigmoid
+ * - Derivative: 1 - tanh(x)^2
+ */
+export function tanh(x: number): number {
+  return Math.tanh(x)
+}
+
+/** Derivative of tanh: 1 - tanh(x)^2 */
+export function tanhDeriv(x: number): number {
+  const t = Math.tanh(x)
+
+  return 1 - t * t
+}
+
+/**
  * Softmax: converts a vector of logits into a probability distribution.
  * - Each output is in (0, 1) and all outputs sum to 1
  * - Used in the output layer for multi-class classification

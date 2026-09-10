@@ -1,5 +1,5 @@
 import { Neuron } from './Neuron'
-import { relu, reluDeriv, sigmoid, sigmoidDeriv, softmax } from './Activation'
+import { relu, reluDeriv, sigmoid, sigmoidDeriv, tanh, tanhDeriv, softmax } from './Activation'
 import type { ActivationType } from './types'
 import { timesForEach, timesMap } from '../utils'
 
@@ -70,10 +70,12 @@ export class Layer {
     // Apply activation function
     if (this.activation === 'softmax') {
       this.outputs = softmax(this.preActivations)
+    } else if (this.activation === 'tanh') {
+      this.outputs = this.preActivations.map(tanh)
+    } else if (this.activation === 'sigmoid') {
+      this.outputs = this.preActivations.map(sigmoid)
     } else {
-      this.outputs = this.preActivations.map(
-        this.activation === 'sigmoid' ? sigmoid : relu,
-      )
+      this.outputs = this.preActivations.map(relu)
     }
 
     return this.outputs
@@ -103,6 +105,8 @@ export class Layer {
       if (this.activation === 'softmax') {
         // Softmax + cross-entropy: gradient simplifies to (output - target)
         delta = outputDeltas[i]
+      } else if (this.activation === 'tanh') {
+        delta = outputDeltas[i] * tanhDeriv(this.preActivations[i])
       } else if (this.activation === 'sigmoid') {
         delta = outputDeltas[i] * sigmoidDeriv(this.preActivations[i])
       } else {
