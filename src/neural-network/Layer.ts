@@ -1,5 +1,13 @@
 import { Neuron } from './Neuron'
-import { relu, reluDeriv, sigmoid, sigmoidDeriv, tanh, tanhDeriv, softmax } from './Activation'
+import {
+  relu,
+  reluDeriv,
+  sigmoid,
+  sigmoidDeriv,
+  tanh,
+  tanhDeriv,
+  softmax,
+} from './Activation'
 import type { ActivationType } from './types'
 import { timesForEach, timesMap } from '../utils'
 
@@ -68,14 +76,21 @@ export class Layer {
     })
 
     // Apply activation function
-    if (this.activation === 'softmax') {
-      this.outputs = softmax(this.preActivations)
-    } else if (this.activation === 'tanh') {
-      this.outputs = this.preActivations.map(tanh)
-    } else if (this.activation === 'sigmoid') {
-      this.outputs = this.preActivations.map(sigmoid)
-    } else {
-      this.outputs = this.preActivations.map(relu)
+    switch (this.activation) {
+      case 'softmax':
+        this.outputs = softmax(this.preActivations)
+        break
+      case 'tanh':
+        this.outputs = this.preActivations.map(tanh)
+        break
+      case 'sigmoid':
+        this.outputs = this.preActivations.map(sigmoid)
+        break
+      case 'relu':
+        this.outputs = this.preActivations.map(relu)
+        break
+      default:
+        throw new Error(`Unsupported activation function: ${this.activation}`)
     }
 
     return this.outputs
@@ -102,16 +117,23 @@ export class Layer {
       // Compute local gradient (delta) based on activation function
       let delta: number
 
-      if (this.activation === 'softmax') {
-        // Softmax + cross-entropy: gradient simplifies to (output - target)
-        delta = outputDeltas[i]
-      } else if (this.activation === 'tanh') {
-        delta = outputDeltas[i] * tanhDeriv(this.preActivations[i])
-      } else if (this.activation === 'sigmoid') {
-        delta = outputDeltas[i] * sigmoidDeriv(this.preActivations[i])
-      } else {
-        // ReLU: derivative is 1 for positive pre-activation, 0 otherwise
-        delta = outputDeltas[i] * reluDeriv(this.preActivations[i])
+      switch (this.activation) {
+        case 'softmax':
+          // Softmax + cross-entropy: gradient simplifies to (output - target)
+          delta = outputDeltas[i]
+          break
+        case 'tanh':
+          delta = outputDeltas[i] * tanhDeriv(this.preActivations[i])
+          break
+        case 'sigmoid':
+          delta = outputDeltas[i] * sigmoidDeriv(this.preActivations[i])
+          break
+        case 'relu':
+          // ReLU: derivative is 1 for positive pre-activation, 0 otherwise
+          delta = outputDeltas[i] * reluDeriv(this.preActivations[i])
+          break
+        default:
+          throw new Error(`Unsupported activation function: ${this.activation}`)
       }
 
       // Update weights and bias, accumulate input deltas for previous layer
