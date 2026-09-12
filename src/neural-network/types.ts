@@ -6,7 +6,7 @@
  */
 
 /** Supported activation function types */
-export type ActivationType = 'relu' | 'sigmoid' | 'tanh' | 'softmax' | 'none'
+export type ActivationType = 'relu' | 'sigmoid' | 'tanh' | 'softmax'
 
 /**
  * Configuration for creating a new neural network.
