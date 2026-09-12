@@ -89,8 +89,10 @@ export class Layer {
       case 'relu':
         this.outputs = this.preActivations.map(relu)
         break
-      default:
-        throw new Error(`Unsupported activation function: ${this.activation}`)
+      default: {
+        const _exhaustiveCheck: never = this.activation
+        throw _exhaustiveCheck
+      }
     }
 
     return this.outputs
@@ -132,8 +134,10 @@ export class Layer {
           // ReLU: derivative is 1 for positive pre-activation, 0 otherwise
           delta = outputDeltas[i] * reluDeriv(this.preActivations[i])
           break
-        default:
-          throw new Error(`Unsupported activation function: ${this.activation}`)
+        default: {
+          const _exhaustiveCheck: never = this.activation
+          throw _exhaustiveCheck
+        }
       }
 
       // Update weights and bias, accumulate input deltas for previous layer
